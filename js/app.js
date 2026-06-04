@@ -26,8 +26,56 @@ let currentLang = 'ar'; // Default language is Arabic
 let activeLightboxProject = null;
 let activeLightboxImageIdx = 0;
 
+// Firebase state
+let isFirebaseEnabled = false;
+let firebaseDbRef = null;
+
+function initFirebase() {
+  if (typeof firebaseConfig !== 'undefined' && firebaseConfig && firebaseConfig.databaseURL && firebaseConfig.apiKey) {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      firebaseDbRef = firebase.database().ref('site_settings');
+      isFirebaseEnabled = true;
+      console.log("Firebase initialized successfully!");
+    } catch (e) {
+      console.error("Firebase initialization failed:", e);
+    }
+  }
+}
+
+function syncWithFirebase() {
+  if (!isFirebaseEnabled || !firebaseDbRef) return;
+  
+  firebaseDbRef.once('value').then((snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      console.log("State loaded from Firebase:", data);
+      
+      const mergeDeep = (target, source) => {
+        for (const key in source) {
+          if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+            if (!target[key]) target[key] = {};
+            mergeDeep(target[key], source[key]);
+          } else {
+            target[key] = source[key];
+          }
+        }
+      };
+      mergeDeep(appState, data);
+      
+      safeStorage.setItem('altilal_company_data', JSON.stringify(appState));
+      applyThemeVariables();
+      renderSite();
+    }
+  }).catch(e => {
+    console.error("Failed to read from Firebase database:", e);
+  });
+}
+
 // Load state from localStorage or use defaultCompanyData
 function initStore() {
+  initFirebase();
+
   const savedData = safeStorage.getItem('altilal_company_data');
   if (savedData) {
     try {
@@ -911,6 +959,8 @@ document.addEventListener('keydown', (e) => {
    Admin Panel Operations
    ========================================================================== */
 let isAdminLoggedIn = false;
+let currentLoggedInUser = '';
+let currentLoggedInPass = '';
 
 function toggleAdminOverlay() {
   const overlay = document.getElementById('admin-overlay');
@@ -951,6 +1001,8 @@ function verifyAdminLogin() {
     (enteredUser === 'admin' && enteredPass === '1234')
   ) {
     isAdminLoggedIn = true;
+    currentLoggedInUser = enteredUser;
+    currentLoggedInPass = enteredPass;
     showAdminDashboard();
   } else {
     alert(currentLang === 'ar' ? 'خطأ في اسم المستخدم أو كلمة المرور!' : 'Invalid username or password!');
@@ -1852,7 +1904,61 @@ function saveAdminChanges() {
   // Re-render
   renderSite();
   
-  alert(currentLang === 'ar' ? 'تم حفظ التعديلات وتحديث محتويات الموقع بنجاح!' : 'Settings saved and page updated successfully!');
+  if (isFirebaseEnabled && firebaseDbRef) {
+    // Save to Firebase Realtime Database
+    firebaseDbRef.set(appState)
+      .then(() => {
+        alert(currentLang === 'ar' 
+          ? 'تم حفظ التعديلات وتطبيقها على كامل الموقع لجميع الزوار بنجاح (عبر قاعدة بيانات Firebase)!' 
+          : 'Settings saved and applied globally to all visitors successfully (via Firebase Database)!');
+      })
+      .catch(err => {
+        console.error("Firebase save error:", err);
+        alert(currentLang === 'ar' 
+          ? 'فشل الحفظ في قاعدة بيانات Firebase. تم الحفظ محلياً فقط.' 
+          : 'Failed to save to Firebase database. Saved locally only.');
+      });
+  } else {
+    // Attempt to save to save.php dynamically (cPanel/PHP fallback)
+    const payload = {
+      username: currentLoggedInUser,
+      password: currentLoggedInPass,
+      state: appState
+    };
+
+    fetch('save.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.success) {
+        // Update memory credentials if changed
+        if (appState.auth) {
+          currentLoggedInUser = appState.auth.username || 'admin';
+          currentLoggedInPass = appState.auth.password || '1234';
+        }
+        alert(currentLang === 'ar' 
+          ? 'تم حفظ التعديلات وتطبيقها على كامل الموقع لجميع الزوار بنجاح!' 
+          : 'Settings saved and applied globally to all visitors successfully!');
+      } else {
+        console.warn("Server save skipped or failed:", data ? data.message : "No response");
+        alert(currentLang === 'ar' 
+          ? 'تم الحفظ محلياً على هذا المتصفح.\n(تنبيه: بما أنك تستضيف على GitHub Pages، يرجى تنزيل ملف default-data.js المحدث من أسفل التبويب العام واستبداله في مجلد المشروع وتحديث مستودع GitHub لتطبيق التعديلات للجميع).'
+          : 'Settings saved locally on this browser.\n(Notice: Since you are hosting on GitHub Pages, please download the updated default-data.js file at the bottom of the General tab, replace it in your project folder, and push to GitHub to apply changes globally.)');
+      }
+    })
+    .catch(err => {
+      console.error("Error writing to server:", err);
+      alert(currentLang === 'ar' 
+        ? 'تم الحفظ محلياً على هذا المتصفح.\n(تنبيه: بما أنك تستضيف على GitHub Pages، يرجى تنزيل ملف default-data.js المحدث من أسفل التبويب العام واستبداله في مجلد المشروع وتحديث مستودع GitHub لتطبيق التعديلات للجميع).'
+        : 'Settings saved locally on this browser.\n(Notice: Since you are hosting on GitHub Pages, please download the updated default-data.js file at the bottom of the General tab, replace it in your project folder, and push to GitHub to apply changes globally.)');
+    });
+  }
+
   toggleAdminOverlay();
 }
 
@@ -1890,4 +1996,5 @@ window.addEventListener('DOMContentLoaded', () => {
   initStore();
   renderSite();
   startPreloader();
+  syncWithFirebase();
 });
