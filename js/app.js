@@ -1,5 +1,24 @@
 // Al-Tilal Al-Maamoura - Core Application Script
 
+// Safe localStorage wrapper to prevent crashes when cookies/storage are blocked or running via file://
+const safeStorage = {
+  getItem(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn("Storage access denied:", e);
+      return null;
+    }
+  },
+  setItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn("Storage write denied:", e);
+    }
+  }
+};
+
 let appState = {};
 let currentLang = 'ar'; // Default language is Arabic
 
@@ -9,7 +28,7 @@ let activeLightboxImageIdx = 0;
 
 // Load state from localStorage or use defaultCompanyData
 function initStore() {
-  const savedData = localStorage.getItem('altilal_company_data');
+  const savedData = safeStorage.getItem('altilal_company_data');
   if (savedData) {
     try {
       appState = JSON.parse(savedData);
@@ -38,7 +57,7 @@ function initStore() {
 }
 
 function saveState() {
-  localStorage.setItem('altilal_company_data', JSON.stringify(appState));
+  safeStorage.setItem('altilal_company_data', JSON.stringify(appState));
   applyThemeVariables();
 }
 
@@ -915,12 +934,21 @@ function verifyAdminLogin() {
   const passInput = document.getElementById('admin-pass-field');
   if (!userInput || !passInput) return;
 
-  const validUsername = (appState.auth && appState.auth.username) || 'admin';
-  const validPassword = (appState.auth && appState.auth.password) || '1234';
+  // Normalize inputs: trim spaces and convert Arabic numbers to English numbers
+  const enteredUser = userInput.value.trim();
+  let enteredPass = passInput.value.trim();
+  
+  const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  enteredPass = enteredPass.replace(/[٠-٩]/g, function(d) {
+    return arabicNums.indexOf(d);
+  });
+
+  const validUsername = ((appState.auth && appState.auth.username) || 'admin').trim();
+  const validPassword = ((appState.auth && appState.auth.password) || '1234').trim();
 
   if (
-    (userInput.value === validUsername && passInput.value === validPassword) ||
-    (userInput.value === 'admin' && passInput.value === '1234')
+    (enteredUser === validUsername && enteredPass === validPassword) ||
+    (enteredUser === 'admin' && enteredPass === '1234')
   ) {
     isAdminLoggedIn = true;
     showAdminDashboard();
@@ -961,11 +989,12 @@ function showAdminLogin() {
 }
 
 function showAdminDashboard() {
-  const container = document.getElementById('admin-panel-container');
-  if (!container) return;
+  try {
+    const container = document.getElementById('admin-panel-container');
+    if (!container) return;
 
-  container.className = 'glass-card admin-panel';
-  container.innerHTML = `
+    container.className = 'glass-card admin-panel';
+    container.innerHTML = `
     <div class="admin-header">
       <h2><i class="fas fa-sliders"></i> ${currentLang === 'ar' ? 'لوحة التحكم وإدارة المحتوى' : 'Admin Control Panel'}</h2>
       <button class="admin-close" onclick="toggleAdminOverlay()"><i class="fas fa-times"></i></button>
@@ -1038,14 +1067,14 @@ function showAdminDashboard() {
               <div>
                 <label style="font-size:0.8rem; color:var(--text-2); margin-bottom:4px; display:block;">تشبع اللون (Saturation): <span id="val-sat">${appState.theme.primarySaturation}%</span></label>
                 <div class="color-picker-wrapper">
-                  <input type="range" id="adm-color-sat" class="color-picker-slider" min="0" max="100" value="${appState.theme.primarySaturation}" style="background: linear-gradient(${lang === 'ar' ? 'to left' : 'to right'}, #808080, var(--primary))" oninput="syncAdminColorSliders()">
+                  <input type="range" id="adm-color-sat" class="color-picker-slider" min="0" max="100" value="${appState.theme.primarySaturation}" style="background: linear-gradient(to right, #808080, var(--primary))" oninput="syncAdminColorSliders()">
                 </div>
               </div>
               
               <div>
                 <label style="font-size:0.8rem; color:var(--text-2); margin-bottom:4px; display:block;">السطوع/الإضاءة (Lightness): <span id="val-light">${appState.theme.primaryLightness}%</span></label>
                 <div class="color-picker-wrapper">
-                  <input type="range" id="adm-color-light" class="color-picker-slider" min="20" max="80" value="${appState.theme.primaryLightness}" style="background: linear-gradient(${lang === 'ar' ? 'to left' : 'to right'}, #000, var(--primary), #fff)" oninput="syncAdminColorSliders()">
+                  <input type="range" id="adm-color-light" class="color-picker-slider" min="20" max="80" value="${appState.theme.primaryLightness}" style="background: linear-gradient(to right, #000, var(--primary), #fff)" oninput="syncAdminColorSliders()">
                   <div id="adm-color-preview" class="color-picker-preview" style="background-color: var(--primary);"></div>
                 </div>
               </div>
@@ -1313,6 +1342,15 @@ function showAdminDashboard() {
   renderAdminStatsSublist();
   renderAdminServicesSublist();
   renderAdminPortfolioSublist();
+  } catch (err) {
+    console.error("Error rendering admin dashboard:", err);
+    alert(currentLang === 'ar' 
+      ? "حدث خطأ أثناء فتح لوحة التحكم. سنقوم بإعادة تعيين إعدادات الموقع الافتراضية لحل المشكلة."
+      : "An error occurred while loading the admin dashboard. We will reset settings to default to fix this.");
+    appState = JSON.parse(JSON.stringify(defaultCompanyData));
+    saveState();
+    location.reload();
+  }
 }
 
 function switchAdminTab(e, tabId) {
@@ -1359,10 +1397,10 @@ function syncAdminColorSliders() {
     preview.style.backgroundColor = `hsl(${hue}, ${sat}%, ${light}%)`;
   }
   
-  // Update slider backgrounds dynamically to match current hue
+  // Update slider backgrounds dynamically to match current hue (always LTR to match slider element direction)
   const inputSat = document.getElementById('adm-color-sat');
   const inputLight = document.getElementById('adm-color-light');
-  const gradDir = currentLang === 'ar' ? 'to left' : 'to right';
+  const gradDir = 'to right';
   if (inputSat) {
     inputSat.style.background = `linear-gradient(${gradDir}, #808080, hsl(${hue}, ${sat}%, ${light}%))`;
   }
@@ -1438,7 +1476,8 @@ function renderAdminStatsSublist() {
   if (!listContainer) return;
   
   let listHtml = '';
-  appState.about.stats.forEach((stat, idx) => {
+  const stats = (appState.about && appState.about.stats) || [];
+  stats.forEach((stat, idx) => {
     listHtml += `
       <div class="admin-list-item">
         <div class="admin-list-item-header">
@@ -1469,7 +1508,8 @@ function renderAdminServicesSublist() {
   if (!listContainer) return;
   
   let listHtml = '';
-  appState.services.forEach((srv, idx) => {
+  const services = appState.services || [];
+  services.forEach((srv, idx) => {
     listHtml += `
       <div class="admin-list-item" data-id="${srv.id}">
         <div class="admin-list-item-header">
@@ -1511,7 +1551,8 @@ function renderAdminPortfolioSublist() {
   if (!listContainer) return;
   
   let listHtml = '';
-  appState.portfolio.forEach((port, idx) => {
+  const portfolio = appState.portfolio || [];
+  portfolio.forEach((port, idx) => {
     const imagesStr = (port.imagesList && port.imagesList.length > 0) 
       ? port.imagesList.join(', ') 
       : port.image;

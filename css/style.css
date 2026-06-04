@@ -1635,13 +1635,10 @@ body.light-mode .social-btn:hover {
   flex: 1;
   height: 8px;
   -webkit-appearance: none;
-  background: linear-gradient(to left, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+  direction: ltr !important; /* Force LTR direction to prevent RTL range input rendering bugs in browsers */
+  background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%) !important;
   border-radius: 10px;
   outline: none;
-}
-
-html[dir="ltr"] .color-picker-slider {
-  background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
 }
 
 .color-picker-slider::-webkit-slider-thumb {
