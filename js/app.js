@@ -1035,14 +1035,14 @@ function showAdminDashboard() {
               <div>
                 <label style="font-size:0.8rem; color:var(--text-2); margin-bottom:4px; display:block;">تشبع اللون (Saturation): <span id="val-sat">${appState.theme.primarySaturation}%</span></label>
                 <div class="color-picker-wrapper">
-                  <input type="range" id="adm-color-sat" class="color-picker-slider" min="0" max="100" value="${appState.theme.primarySaturation}" style="background: linear-gradient(to right, #808080, var(--primary))" oninput="syncAdminColorSliders()">
+                  <input type="range" id="adm-color-sat" class="color-picker-slider" min="0" max="100" value="${appState.theme.primarySaturation}" style="background: linear-gradient(${lang === 'ar' ? 'to left' : 'to right'}, #808080, var(--primary))" oninput="syncAdminColorSliders()">
                 </div>
               </div>
               
               <div>
                 <label style="font-size:0.8rem; color:var(--text-2); margin-bottom:4px; display:block;">السطوع/الإضاءة (Lightness): <span id="val-light">${appState.theme.primaryLightness}%</span></label>
                 <div class="color-picker-wrapper">
-                  <input type="range" id="adm-color-light" class="color-picker-slider" min="20" max="80" value="${appState.theme.primaryLightness}" style="background: linear-gradient(to right, #000, var(--primary), #fff)" oninput="syncAdminColorSliders()">
+                  <input type="range" id="adm-color-light" class="color-picker-slider" min="20" max="80" value="${appState.theme.primaryLightness}" style="background: linear-gradient(${lang === 'ar' ? 'to left' : 'to right'}, #000, var(--primary), #fff)" oninput="syncAdminColorSliders()">
                   <div id="adm-color-preview" class="color-picker-preview" style="background-color: var(--primary);"></div>
                 </div>
               </div>
@@ -1354,6 +1354,17 @@ function syncAdminColorSliders() {
   const preview = document.getElementById('adm-color-preview');
   if (preview) {
     preview.style.backgroundColor = `hsl(${hue}, ${sat}%, ${light}%)`;
+  }
+  
+  // Update slider backgrounds dynamically to match current hue
+  const inputSat = document.getElementById('adm-color-sat');
+  const inputLight = document.getElementById('adm-color-light');
+  const gradDir = currentLang === 'ar' ? 'to left' : 'to right';
+  if (inputSat) {
+    inputSat.style.background = `linear-gradient(${gradDir}, #808080, hsl(${hue}, ${sat}%, ${light}%))`;
+  }
+  if (inputLight) {
+    inputLight.style.background = `linear-gradient(${gradDir}, #000, hsl(${hue}, ${sat}%, ${light}%), #fff)`;
   }
 }
 
