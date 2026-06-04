@@ -1091,6 +1091,13 @@ function showAdminDashboard() {
               <input type="password" id="adm-auth-pass" class="form-input" value="${(appState.auth && appState.auth.password) || '1234'}">
             </div>
           </div>
+          
+          <!-- Export Config Files Card -->
+          <div class="form-group" style="margin-top: 25px; padding: 20px; background: rgba(var(--primary-hue), var(--primary-sat), 10%, 0.15); border: 1px solid var(--primary-glow); border-radius: 12px; text-align: center;">
+            <h4 style="color: var(--primary); font-weight: 800; margin-bottom: 8px; font-size: 0.95rem;"><i class="fas fa-file-export"></i> حفظ وتصدير تعديلات الموقع نهائياً للجميع</h4>
+            <p style="color: var(--text-2); font-size: 0.8rem; margin-bottom: 15px; line-height: 1.45;">لجعل الألوان والنصوص والتغييرات تظهر لجميع الزوار على كافة المتصفحات، اضغط الزر أدناه لتنزيل ملف البيانات الجديد (default-data.js)، ثم استبدله بالملف القديم في المجلد js/default-data.js وارفعه لـ GitHub.</p>
+            <button type="button" class="btn btn-secondary" onclick="downloadDefaultDataFile()" style="padding: 8px 20px; font-size: 0.8rem; border-radius: 30px; border: 1px solid var(--primary-glow);"><i class="fas fa-download"></i> تنزيل ملف default-data.js المحدث</button>
+          </div>
         </div>
 
         <!-- SEO TAB -->
@@ -1468,6 +1475,32 @@ Sitemap: ${domain}/sitemap.xml`;
   alert(currentLang === 'ar' 
     ? 'تم توليد وتحميل ملفات الأرشفة (sitemap.xml و robots.txt) بنجاح! يرجى نقلها إلى مجلد موقعك الرئيسي ورفعها لـ GitHub.' 
     : 'SEO files (sitemap.xml & robots.txt) generated and downloaded successfully! Please copy them to your root folder and push to GitHub.');
+}
+
+function downloadDefaultDataFile() {
+  const exportData = JSON.parse(JSON.stringify(appState));
+  const fileContent = `const defaultCompanyData = ${JSON.stringify(exportData, null, 2)};\n\n` +
+    `// Export to window if running in browser\n` +
+    `if (typeof window !== 'undefined') {\n` +
+    `  window.defaultCompanyData = defaultCompanyData;\n` +
+    `}\n` +
+    `if (typeof module !== 'undefined' && module.exports) {\n` +
+    `  module.exports = defaultCompanyData;\n` +
+    `}\n`;
+  
+  const blob = new Blob([fileContent], { type: 'application/javascript' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'default-data.js';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  alert(currentLang === 'ar'
+    ? 'تم توليد وتنزيل ملف البيانات الجديد (default-data.js) بنجاح!\nيرجى استبدال الملف القديم في مجلد js/default-data.js بهذا الملف الجديد، ثم رفعه لـ GitHub ليعم التعديل على جميع الزوار.'
+    : 'New data file (default-data.js) generated and downloaded successfully!\nPlease replace the old file in js/default-data.js with this new file, and push to GitHub to apply changes globally.');
 }
 
 // Sub list renderers inside admin dashboard
