@@ -1013,11 +1013,41 @@ function showAdminDashboard() {
           </div>
           <div class="form-group">
             <label class="form-label">تعديل اللون الرئيسي للموقع (علامة التلال المعمورة)</label>
-            <div class="color-picker-wrapper">
-              <input type="range" id="adm-color-hue" class="color-picker-slider" min="0" max="360" value="${appState.theme.primaryHue}" oninput="syncAdminColorPreview(this.value)">
-              <div id="adm-color-preview" class="color-picker-preview" style="background-color: var(--primary);"></div>
+            
+            <!-- Luxury Color Presets -->
+            <div class="theme-presets-container" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px;">
+              <button type="button" class="preset-btn" onclick="applyColorPreset(38, 75, 48)" style="background:#b38f30; color:#fff; border:none; padding:6px 12px; border-radius:15px; font-size:0.75rem; cursor:pointer; font-weight:bold;">الذهبي الفاخر</button>
+              <button type="button" class="preset-btn" onclick="applyColorPreset(144, 82, 35)" style="background:#118c39; color:#fff; border:none; padding:6px 12px; border-radius:15px; font-size:0.75rem; cursor:pointer; font-weight:bold;">الأخضر الزمردي</button>
+              <button type="button" class="preset-btn" onclick="applyColorPreset(215, 75, 40)" style="background:#1a52c5; color:#fff; border:none; padding:6px 12px; border-radius:15px; font-size:0.75rem; cursor:pointer; font-weight:bold;">الأزرق الملكي</button>
+              <button type="button" class="preset-btn" onclick="applyColorPreset(165, 70, 42)" style="background:#20b38b; color:#fff; border:none; padding:6px 12px; border-radius:15px; font-size:0.75rem; cursor:pointer; font-weight:bold;">النعناعي الحديث</button>
+              <button type="button" class="preset-btn" onclick="applyColorPreset(18, 65, 48)" style="background:#c95a2e; color:#fff; border:none; padding:6px 12px; border-radius:15px; font-size:0.75rem; cursor:pointer; font-weight:bold;">النحاسي الملكي</button>
+              <button type="button" class="preset-btn" onclick="applyColorPreset(210, 15, 55)" style="background:#7a8a99; color:#fff; border:none; padding:6px 12px; border-radius:15px; font-size:0.75rem; cursor:pointer; font-weight:bold;">الفضي الصلب</button>
             </div>
-            <p class="admin-control-desc">اسحب لتغيير اللون الكلي للموقع على الفور (الذهبي، الأزرق، الأخضر، إلخ).</p>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="font-size:0.8rem; color:var(--text-2); margin-bottom:4px; display:block;">درجة اللون (Hue): <span id="val-hue">${appState.theme.primaryHue}</span></label>
+                <div class="color-picker-wrapper">
+                  <input type="range" id="adm-color-hue" class="color-picker-slider" min="0" max="360" value="${appState.theme.primaryHue}" oninput="syncAdminColorSliders()">
+                </div>
+              </div>
+              
+              <div>
+                <label style="font-size:0.8rem; color:var(--text-2); margin-bottom:4px; display:block;">تشبع اللون (Saturation): <span id="val-sat">${appState.theme.primarySaturation}%</span></label>
+                <div class="color-picker-wrapper">
+                  <input type="range" id="adm-color-sat" class="color-picker-slider" min="0" max="100" value="${appState.theme.primarySaturation}" style="background: linear-gradient(to right, #808080, var(--primary))" oninput="syncAdminColorSliders()">
+                </div>
+              </div>
+              
+              <div>
+                <label style="font-size:0.8rem; color:var(--text-2); margin-bottom:4px; display:block;">السطوع/الإضاءة (Lightness): <span id="val-light">${appState.theme.primaryLightness}%</span></label>
+                <div class="color-picker-wrapper">
+                  <input type="range" id="adm-color-light" class="color-picker-slider" min="20" max="80" value="${appState.theme.primaryLightness}" style="background: linear-gradient(to right, #000, var(--primary), #fff)" oninput="syncAdminColorSliders()">
+                  <div id="adm-color-preview" class="color-picker-preview" style="background-color: var(--primary);"></div>
+                </div>
+              </div>
+            </div>
+            <p class="admin-control-desc" style="margin-top:8px;">اختر أحد الألوان الجاهزة الفاخرة، أو اسحب أشرطة التحكم لتخصيص لون فريد بالكامل للموقع.</p>
           </div>
           <div class="admin-row" style="margin-top:20px;">
             <div class="form-group">
@@ -1294,13 +1324,42 @@ function switchAdminTab(e, tabId) {
   e.currentTarget.classList.add('active');
 }
 
-function syncAdminColorPreview(hueVal) {
-  appState.theme.primaryHue = hueVal;
+function syncAdminColorSliders() {
+  const hue = document.getElementById('adm-color-hue').value;
+  const sat = document.getElementById('adm-color-sat').value;
+  const light = document.getElementById('adm-color-light').value;
+  
+  // Update labels
+  const lblHue = document.getElementById('val-hue');
+  const lblSat = document.getElementById('val-sat');
+  const lblLight = document.getElementById('val-light');
+  
+  if (lblHue) lblHue.textContent = hue;
+  if (lblSat) lblSat.textContent = sat + '%';
+  if (lblLight) lblLight.textContent = light + '%';
+  
+  appState.theme.primaryHue = hue;
+  appState.theme.primarySaturation = sat;
+  appState.theme.primaryLightness = light;
   applyThemeVariables();
+  
+  // Update previews
   const preview = document.getElementById('adm-color-preview');
   if (preview) {
-    preview.style.backgroundColor = `hsl(${hueVal}, ${appState.theme.primarySaturation}%, ${appState.theme.primaryLightness}%)`;
+    preview.style.backgroundColor = `hsl(${hue}, ${sat}%, ${light}%)`;
   }
+}
+
+function applyColorPreset(hue, sat, light) {
+  const inputHue = document.getElementById('adm-color-hue');
+  const inputSat = document.getElementById('adm-color-sat');
+  const inputLight = document.getElementById('adm-color-light');
+  
+  if (inputHue) inputHue.value = hue;
+  if (inputSat) inputSat.value = sat;
+  if (inputLight) inputLight.value = light;
+  
+  syncAdminColorSliders();
 }
 
 // Sub list renderers inside admin dashboard
@@ -1536,6 +1595,11 @@ function saveAdminChanges() {
   
   appState.auth.username = document.getElementById('adm-auth-user').value;
   appState.auth.password = document.getElementById('adm-auth-pass').value;
+  
+  // 1.5 Theme Settings
+  appState.theme.primaryHue = parseInt(document.getElementById('adm-color-hue').value, 10);
+  appState.theme.primarySaturation = parseInt(document.getElementById('adm-color-sat').value, 10);
+  appState.theme.primaryLightness = parseInt(document.getElementById('adm-color-light').value, 10);
   
   // 2. SEO Settings
   appState.seo.metaTitleAr = document.getElementById('adm-seo-title-ar').value;
