@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مؤسسة التلال المعمورة للمقاولات | تشطيب وتجهيز مطاعم ومقاولات عامة بالرياض</title>
+  <meta name="description" content="مؤسسة التلال المعمورة للمقاولات بالرياض: متخصصون في أعمال المقاولات العامة وتشييد المباني، وأعمال التشطيبات الفاخرة وتجهيز وتطوير المطاعم والمقاهي وخطوط الإنتاج بأعلى معايير الجودة.">
+  <meta name="keywords" content="التلال المعمورة, مقاولات الرياض, تشطيب مطاعم الرياض, تجهيز كافيهات السعودية, تشطيب دانكن الرياض, مقاولات عامة, Al-Tilal Al-Maamoura, Saudi Contracting, Restaurant Fit-out Riyadh">
+  <link rel="canonical" href="https://telalmc.com/">
+  
+  <!-- OpenGraph Social Sharing Metadata -->
+  <meta property="og:title" content="مؤسسة التلال المعمورة للمقاولات | تشطيب وتجهيز مطاعم ومقاولات عامة بالرياض">
+  <meta property="og:description" content="مؤسسة التلال المعمورة للمقاولات بالرياض: متخصصون في أعمال المقاولات العامة وتشييد المباني، وأعمال التشطيبات الفاخرة وتجهيز وتطوير المطاعم والمقاهي وخطوط الإنتاج بأعلى معايير الجودة.">
+  <meta property="og:image" content="logo.png">
+  <meta property="og:url" content="https://telalmc.com/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- AOS Animation CSS (Animate On Scroll) -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="overflow: hidden;">
+  <!-- Preloader Screen -->
+  <div id="preloader" class="preloader">
+    <div class="preloader-content">
+      <img src="logo.png" alt="Al-Tilal Al-Maamoura Logo" class="preloader-logo">
+      <div class="preloader-bar-bg">
+        <div id="preloader-bar" class="preloader-bar"></div>
+      </div>
+      <span id="preloader-percent" class="preloader-percent">0%</span>
+    </div>
+  </div>
+
+  <!-- Moving Glow Background Orbs -->
+  <div class="background-glow">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Interactive 3D Background Canvas -->
+  <canvas id="cursor-canvas"></canvas>
+
+  <!-- Header Navigation -->
+  <header>
+    <nav class="navbar" id="navbar">
+      <div class="container nav-wrapper">
+        <!-- Logo -->
+        <a href="#home" class="logo" id="navbar-logo">
+          <img src="logo.png" alt="Logo" class="logo-img-tag" style="max-height: 48px; max-width: 130px; object-fit: contain; border-radius: 8px;">
+          <div class="logo-text-box">
+            <span class="logo-title">التلال المعمورة</span>
+            <span class="logo-sub">للمقاولات العامة والتشطيبات</span>
+          </div>
+        </a>
+
+        <!-- Hamburger Icon (Mobile) -->
+        <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Open Navigation Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <!-- Nav Links -->
+        <ul class="nav-menu" id="nav-menu">
+          <!-- Dynamic rendering by app.js -->
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="container hero-grid">
+      <div class="hero-content" data-aos="fade-left" data-aos-duration="1000">
+        <div class="hero-badge">
+          <span>شريككم الاستراتيجي في تشييد وتجهيز المشاريع التجارية</span>
+        </div>
+        <h1 class="hero-title">نصنع الفخامة المعمارية ونجهز مساحاتكم التجارية بأعلى معايير الإتقان</h1>
+        <p class="hero-subtitle">مؤسسة رائدة في المقاولات العامة وأعمال التشطيبات الفاخرة وتجهيز وتطوير المطاعم والمقاهي العالمية، وتركيب خطوط الإنتاج الغذائية، مع الالتزام التام بالجودة والجدول الزمني.</p>
+        <div class="hero-actions">
+          <a href="#portfolio" id="hero-primary-btn" class="btn btn-primary">استكشف مشاريعنا الكبرى <i class="fas fa-arrow-left"></i></a>
+          <a href="https://wa.me/966595160034" id="hero-secondary-btn" class="btn btn-secondary" target="_blank"><i class="fab fa-whatsapp"></i> تواصل مع الإدارة الهندسية</a>
+        </div>
+      </div>
+      <div class="hero-visual" data-aos="fade-right" data-aos-duration="1000" data-aos-delay="200">
+        <div class="glass-artwork">
+          <div class="visual-emblem-container">
+            <div class="tech-ring tech-ring-1"></div>
+            <div class="tech-ring tech-ring-2"></div>
+            <div class="visual-logo-plaque">
+              <img src="logo.png" alt="Al-Tilal Al-Maamoura Logo">
+            </div>
+          </div>
+          <div class="glass-card visual-card-floating card-floating-1" id="float-card-1">
+            <!-- Dynamic Content -->
+          </div>
+          <div class="glass-card visual-card-floating card-floating-2" id="float-card-2">
+            <!-- Dynamic Content -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Success Partners Marquee -->
+  <section class="partners-marquee-section" id="partners">
+    <div class="container">
+      <div class="partners-marquee-wrapper" data-aos="fade-up" data-aos-duration="800">
+        <div class="partners-marquee-track" id="partners-marquee-track">
+          <!-- Dynamic scroll track rendered by app.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about" id="about">
+    <div class="container about-grid">
+      <div class="about-showcase-box" data-aos="fade-right" data-aos-duration="900">
+        <!-- Display Dunkin Riyadh photo as the company showcase -->
+        <img class="about-main-image" src="projects/riyadh/1.jpeg" alt="مؤسسة التلال المعمورة للمقاولات">
+      </div>
+      <div class="about-content" data-aos="fade-left" data-aos-duration="900" data-aos-delay="150">
+        <h2 class="section-title" id="about-title" style="text-align:right; background:none; -webkit-text-fill-color:inherit;">عن مؤسسة التلال المعمورة</h2>
+        <h3 id="about-subtitle">نبني النجاح ونشكل معالم الغد بخبرة عريقة</h3>
+        <p class="about-text" id="about-text">
+          مؤسسة التلال المعمورة للمقاولات هي مؤسسة سعودية رائدة تتخذ من الرياض مقراً لها، وتنشط في قطاع التشييد والإنشاءات والتشطيبات الفاخرة. حققت المؤسسة نجاحات بارزة في تنفيذ وتجهيز فروع العلامات التجارية العالمية في المملكة، مثل أعمال تطوير وتشطيب فروع دانكن دونتس (Dunkin')، ومخابز دوقة (Dokka Bakery)، وغيرها.
+        </p>
+        <div class="about-stats" id="about-stats-container">
+          <!-- Dynamic stats rendered by app.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vision, Mission & Values Section -->
+  <section class="vision-mission" id="vision-mission">
+    <div class="container">
+      <div class="vision-mission-grid" id="vision-mission-grid">
+        <!-- Dynamic cards rendered by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="services" id="services">
+    <div class="container">
+      <div class="section-title-wrap" data-aos="fade-up" data-aos-duration="800">
+        <h2 class="section-title" id="services-title">خدماتنا المتميزة</h2>
+        <p class="section-subtitle" id="services-subtitle">نقدم لك باقة متكاملة من خدمات المقاولات العامة وتشييد المباني وأعمال البنية التحتية والتشطيبات</p>
+      </div>
+      <div class="services-grid" id="services-grid">
+        <!-- Dynamic rendering by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Turnkey Process Roadmap Section -->
+  <section class="roadmap-section" id="turnkey-roadmap">
+    <div class="container">
+      <div class="section-title-wrap" data-aos="fade-up" data-aos-duration="800">
+        <h2 class="section-title" id="roadmap-title">منهجية العمل (تسليم المفتاح)</h2>
+        <p class="section-subtitle" id="roadmap-subtitle">خطوات متسلسلة ومحكمة تضمن جودة التنفيذ وسرعة التسليم من المخططات إلى التشغيل الفوري</p>
+      </div>
+      <div class="roadmap-timeline" id="roadmap-timeline">
+        <!-- Dynamic roadmap elements rendered by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio Section -->
+  <section class="portfolio" id="portfolio">
+    <div class="container">
+      <div class="section-title-wrap" data-aos="fade-up" data-aos-duration="800">
+        <h2 class="section-title" id="portfolio-title">معرض أعمالنا</h2>
+        <p class="section-subtitle" id="portfolio-subtitle">نظرة سريعة على بعض المشاريع التي قمنا بتنفيذها لعملائنا بكل فخر</p>
+      </div>
+      <div class="portfolio-filters" id="portfolio-filters" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
+        <!-- Dynamic filters rendering by app.js -->
+      </div>
+      <div class="portfolio-grid" id="portfolio-grid">
+        <!-- Dynamic rendering by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact" id="contact">
+    <div class="container">
+      <div class="section-title-wrap" data-aos="fade-up" data-aos-duration="800">
+        <h2 class="section-title" id="contact-title">تواصل معنا</h2>
+        <p class="section-subtitle" id="contact-subtitle">نحن هنا لمساعدتك والإجابة على أي استفسارات تخص مشروعك القادم</p>
+      </div>
+      
+      <div class="contact-grid">
+        <div class="contact-info" data-aos="fade-left" data-aos-duration="900">
+          <div class="contact-info-list" id="contact-info-list">
+            <!-- Dynamic contact info rendering by app.js -->
+          </div>
+          <div class="map-container" id="map-iframe-container" data-aos="zoom-in" data-aos-duration="800" data-aos-delay="200">
+            <!-- Dynamic map rendering by app.js -->
+          </div>
+        </div>
+        <div class="glass-card contact-form-card" id="contact-form-card" data-aos="fade-right" data-aos-duration="900" data-aos-delay="150">
+          <!-- Dynamic form content rendered by app.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-logo" id="footer-logo">
+        <!-- Footer logo rendered by app.js -->
+      </div>
+      <div class="footer-socials" id="footer-socials">
+        <!-- Footer socials rendered by app.js -->
+      </div>
+      <p class="footer-copyright" id="footer-copyright">
+        &copy; 2026 جميع الحقوق محفوظة لـ مؤسسة التلال المعمورة للمقاولات.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Lightbox Modal for Portfolio Showcase -->
+  <div id="lightbox-modal" class="lightbox-modal">
+    <div class="lightbox-content">
+      <!-- Close Button -->
+      <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close Gallery"><i class="fas fa-times"></i></button>
+      
+      <!-- Previous/Next Buttons -->
+      <button class="lightbox-prev" onclick="prevLightboxImage()" aria-label="Previous Image"><i class="fas fa-chevron-left"></i></button>
+      <button class="lightbox-next" onclick="nextLightboxImage()" aria-label="Next Image"><i class="fas fa-chevron-right"></i></button>
+      
+      <!-- Main Image View -->
+      <div class="lightbox-main-img-box">
+        <img id="lightbox-img" class="lightbox-main-img" src="" alt="Lightbox Project View">
+      </div>
+      
+      <!-- Thumbnail Navigation -->
+      <div id="lightbox-thumbs" class="lightbox-thumbs-container">
+        <!-- Renders dynamically -->
+      </div>
+      
+      <!-- Title & Description details -->
+      <div class="lightbox-details">
+        <h4 id="lightbox-title">اسم المشروع</h4>
+        <p id="lightbox-desc">وصف تفصيلي للمشروع من الإدارة الهندسية لمؤسسة التلال المعمورة للمقاولات.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Panel Overlay -->
+  <div id="admin-overlay" class="admin-overlay">
+    <div id="admin-panel-container">
+      <!-- Dynamic dashboard rendering by app.js -->
+    </div>
+  </div>
+
+  <!-- Mobile Menu Logic script helper -->
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('nav-menu');
+      const hamburger = document.getElementById('hamburger-btn');
+      menu.classList.toggle('active');
+      hamburger.classList.toggle('open');
+    }
+    
+    // Close mobile menu on nav link click
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('nav-link')) {
+        const menu = document.getElementById('nav-menu');
+        const hamburger = document.getElementById('hamburger-btn');
+        if (menu.classList.contains('active')) {
+          menu.classList.remove('active');
+          hamburger.classList.remove('open');
+        }
+      }
+    });
+  </script>
+
+  <!-- AOS Scroll Animation JS -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize Animate On Scroll (AOS) with mirror enabled
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-cubic',
+      once: false,
+      mirror: true,
+      offset: 50
+    });
+  </script>
+
+  <!-- Floating WhatsApp Contact Button -->
+  <a href="https://wa.me/966595160034" class="whatsapp-float" id="whatsapp-float-btn" target="_blank" rel="noopener noreferrer" aria-label="Contact us on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+    <span class="whatsapp-tooltip">تواصل معنا واتساب</span>
+  </a>
+
+  <!-- Scripts -->
+  <script src="js/default-data.js"></script>
+  <script src="js/cursor-trail.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
