@@ -21,11 +21,6 @@ function initStore() {
     appState = JSON.parse(JSON.stringify(defaultCompanyData));
   }
 
-  // Force sync the color theme variables from code for easy previewing
-  appState.theme.primaryHue = defaultCompanyData.theme.primaryHue;
-  appState.theme.primarySaturation = defaultCompanyData.theme.primarySaturation;
-  appState.theme.primaryLightness = defaultCompanyData.theme.primaryLightness;
-
   // Deep merge to ensure all configuration keys exist in appState
   const mergeDeep = (target, source) => {
     for (const key in source) {
