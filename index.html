@@ -33,6 +33,30 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
+
+  <!-- Prevent Flash of Unstyled Theme Color (FOUC) -->
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('altilal_company_data');
+        if (saved) {
+          const state = JSON.parse(saved);
+          if (state && state.theme) {
+            const root = document.documentElement;
+            if (state.theme.primaryHue) {
+              root.style.setProperty('--primary-hue', state.theme.primaryHue);
+            }
+            if (state.theme.primarySaturation) {
+              root.style.setProperty('--primary-sat', state.theme.primarySaturation + '%');
+            }
+            if (state.theme.primaryLightness) {
+              root.style.setProperty('--primary-light', state.theme.primaryLightness + '%');
+            }
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body style="overflow: hidden;">
   <!-- Preloader Screen -->
