@@ -1093,6 +1093,13 @@ function showAdminDashboard() {
               <input type="text" id="adm-seo-og" class="form-input" value="${appState.seo.ogImage}">
             </div>
           </div>
+          
+          <!-- Generate & Download SEO Files Card -->
+          <div class="form-group" style="margin-top: 25px; padding: 20px; background: rgba(var(--primary-hue), var(--primary-sat), 10%, 0.15); border: 1px solid var(--primary-glow); border-radius: 12px; text-align: center;">
+            <h4 style="color: var(--primary); font-weight: 800; margin-bottom: 8px; font-size: 0.95rem;"><i class="fas fa-file-export"></i> توليد وتنزيل ملفات الأرشفة والخرائط</h4>
+            <p style="color: var(--text-2); font-size: 0.8rem; margin-bottom: 15px; line-height: 1.45;">يقوم هذا الخيار بإنشاء وتنزيل ملفات الأرشفة (sitemap.xml و robots.txt) ديناميكياً بناءً على الرابط الثابت للموقع المدخل أعلاه.</p>
+            <button type="button" class="btn btn-secondary" onclick="downloadSeoFiles()" style="padding: 8px 20px; font-size: 0.8rem; border-radius: 30px; border: 1px solid var(--primary-glow);"><i class="fas fa-download"></i> توليد وتحميل الملفات</button>
+          </div>
         </div>
 
         <!-- HERO TAB -->
@@ -1360,6 +1367,55 @@ function applyColorPreset(hue, sat, light) {
   if (inputLight) inputLight.value = light;
   
   syncAdminColorSliders();
+}
+
+function downloadSeoFiles() {
+  const domain = appState.seo.canonicalUrl.replace(/\/$/, ""); // Strip trailing slash
+  
+  // 1. Generate Sitemap XML
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${domain}/</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+
+  // 2. Generate Robots.txt
+  const robotsTxt = `User-agent: *
+Allow: /
+Disallow: /css/
+Disallow: /js/
+
+Sitemap: ${domain}/sitemap.xml`;
+
+  // Trigger download for sitemap.xml
+  const blobSitemap = new Blob([sitemapXml], { type: 'application/xml' });
+  const urlSitemap = URL.createObjectURL(blobSitemap);
+  const aSitemap = document.createElement('a');
+  aSitemap.href = urlSitemap;
+  aSitemap.download = 'sitemap.xml';
+  document.body.appendChild(aSitemap);
+  aSitemap.click();
+  document.body.removeChild(aSitemap);
+  URL.revokeObjectURL(urlSitemap);
+
+  // Trigger download for robots.txt
+  const blobRobots = new Blob([robotsTxt], { type: 'text/plain' });
+  const urlRobots = URL.createObjectURL(blobRobots);
+  const aRobots = document.createElement('a');
+  aRobots.href = urlRobots;
+  aRobots.download = 'robots.txt';
+  document.body.appendChild(aRobots);
+  aRobots.click();
+  document.body.removeChild(aRobots);
+  URL.revokeObjectURL(urlRobots);
+
+  alert(currentLang === 'ar' 
+    ? 'تم توليد وتحميل ملفات الأرشفة (sitemap.xml و robots.txt) بنجاح! يرجى نقلها إلى مجلد موقعك الرئيسي ورفعها لـ GitHub.' 
+    : 'SEO files (sitemap.xml & robots.txt) generated and downloaded successfully! Please copy them to your root folder and push to GitHub.');
 }
 
 // Sub list renderers inside admin dashboard
