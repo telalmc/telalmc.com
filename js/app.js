@@ -2098,8 +2098,8 @@ function syncStateFromDom() {
     statLabelsAr.forEach((labelAr, idx) => {
       appState.about.stats.push({
         labelAr: labelAr.value,
-        labelEn: statLabelsEn[idx].value,
-        value: statVals[idx].value
+        labelEn: statLabelsEn[idx]?.value || '',
+        value: statVals[idx]?.value || ''
       });
     });
   }
@@ -2109,11 +2109,11 @@ function syncStateFromDom() {
     appState.services = [];
     srvCards.forEach(card => {
       const id = card.getAttribute('data-id');
-      const nameAr = card.querySelector('.adm-srv-name-ar').value;
-      const nameEn = card.querySelector('.adm-srv-name-en').value;
-      const descAr = card.querySelector('.adm-srv-desc-ar').value;
-      const descEn = card.querySelector('.adm-srv-desc-en').value;
-      const icon = card.querySelector('.adm-srv-icon').value;
+      const nameAr = card.querySelector('.adm-srv-name-ar')?.value || '';
+      const nameEn = card.querySelector('.adm-srv-name-en')?.value || '';
+      const descAr = card.querySelector('.adm-srv-desc-ar')?.value || '';
+      const descEn = card.querySelector('.adm-srv-desc-en')?.value || '';
+      const icon = card.querySelector('.adm-srv-icon')?.value || '';
       appState.services.push({ id, nameAr, nameEn, descAr, descEn, icon });
     });
   }
@@ -2125,13 +2125,13 @@ function syncStateFromDom() {
       const id = card.getAttribute('data-id');
       const originalProject = appState.portfolio.find(p => p.id === id) || {};
       
-      const titleAr = card.querySelector('.adm-port-title-ar').value;
-      const titleEn = card.querySelector('.adm-port-title-en').value;
-      const categoryAr = card.querySelector('.adm-port-cat-ar').value;
-      const categoryEn = card.querySelector('.adm-port-cat-en').value;
-      const descAr = card.querySelector('.adm-port-desc-ar').value;
-      const descEn = card.querySelector('.adm-port-desc-en').value;
-      const image = card.querySelector('.adm-port-img').value;
+      const titleAr = card.querySelector('.adm-port-title-ar')?.value || '';
+      const titleEn = card.querySelector('.adm-port-title-en')?.value || '';
+      const categoryAr = card.querySelector('.adm-port-cat-ar')?.value || '';
+      const categoryEn = card.querySelector('.adm-port-cat-en')?.value || '';
+      const descAr = card.querySelector('.adm-port-desc-ar')?.value || '';
+      const descEn = card.querySelector('.adm-port-desc-en')?.value || '';
+      const image = card.querySelector('.adm-port-img')?.value || '';
       const imagesList = originalProject.imagesList || [image];
       
       updatedPortfolio.push({
@@ -2154,10 +2154,10 @@ function syncStateFromDom() {
     const updatedPartners = [];
     partnerCards.forEach(card => {
       const id = card.getAttribute('data-id');
-      const name = card.querySelector('.adm-partner-name').value;
-      const logoText = card.querySelector('.adm-partner-logo-text').value;
-      const subTextAr = card.querySelector('.adm-partner-sub-ar').value;
-      const subTextEn = card.querySelector('.adm-partner-sub-en').value;
+      const name = card.querySelector('.adm-partner-name')?.value || '';
+      const logoText = card.querySelector('.adm-partner-logo-text')?.value || '';
+      const subTextAr = card.querySelector('.adm-partner-sub-ar')?.value || '';
+      const subTextEn = card.querySelector('.adm-partner-sub-en')?.value || '';
       
       updatedPartners.push({
         id,
@@ -2178,10 +2178,10 @@ function syncStateFromDom() {
       const idx = parseInt(card.getAttribute('data-idx'), 10);
       const originalStep = appState.roadmap[idx] || {};
       
-      const titleAr = card.querySelector('.adm-road-title-ar').value;
-      const titleEn = card.querySelector('.adm-road-title-en').value;
-      const descAr = card.querySelector('.adm-road-desc-ar').value;
-      const descEn = card.querySelector('.adm-road-desc-en').value;
+      const titleAr = card.querySelector('.adm-road-title-ar')?.value || '';
+      const titleEn = card.querySelector('.adm-road-title-en')?.value || '';
+      const descAr = card.querySelector('.adm-road-desc-ar')?.value || '';
+      const descEn = card.querySelector('.adm-road-desc-en')?.value || '';
       
       updatedRoadmap.push({
         step: originalStep.step || ('0' + (idx + 1)),
@@ -2194,78 +2194,91 @@ function syncStateFromDom() {
     appState.roadmap = updatedRoadmap;
   }
 
-  appState.contact.phone = document.getElementById('adm-contact-phone').value;
-  appState.contact.whatsapp = document.getElementById('adm-contact-wa').value;
-  appState.contact.email = document.getElementById('adm-contact-mail').value;
-  appState.contact.addressAr = document.getElementById('adm-contact-add-ar').value;
-  appState.contact.addressEn = document.getElementById('adm-contact-add-en').value;
-  appState.contact.mapIframe = document.getElementById('adm-contact-map').value;
+  const cPhone = document.getElementById('adm-contact-phone');
+  if (cPhone) appState.contact.phone = cPhone.value;
+  const cWa = document.getElementById('adm-contact-wa');
+  if (cWa) appState.contact.whatsapp = cWa.value;
+  const cMail = document.getElementById('adm-contact-mail');
+  if (cMail) appState.contact.email = cMail.value;
+  const cAddAr = document.getElementById('adm-contact-add-ar');
+  if (cAddAr) appState.contact.addressAr = cAddAr.value;
+  const cAddEn = document.getElementById('adm-contact-add-en');
+  if (cAddEn) appState.contact.addressEn = cAddEn.value;
+  const cMap = document.getElementById('adm-contact-map');
+  if (cMap) appState.contact.mapIframe = cMap.value;
 }
 
 function saveAdminChanges() {
-  syncStateFromDom();
+  try {
+    syncStateFromDom();
 
-  // Persist State
-  saveState();
-  
-  // Re-render
-  renderSite();
-  
-  if (isFirebaseEnabled && firebaseDbRef) {
-    // Save to Firebase Realtime Database
-    firebaseDbRef.set(appState)
-      .then(() => {
-        alert(currentLang === 'ar' 
-          ? 'تم حفظ التعديلات بنجاح!' 
-          : 'Changes saved successfully!');
-        toggleAdminOverlay();
+    // Persist State
+    saveState();
+    
+    // Re-render
+    renderSite();
+    
+    if (isFirebaseEnabled && firebaseDbRef) {
+      // Save to Firebase Realtime Database
+      firebaseDbRef.set(appState)
+        .then(() => {
+          alert(currentLang === 'ar' 
+            ? 'تم حفظ التعديلات بنجاح!' 
+            : 'Changes saved successfully!');
+          toggleAdminOverlay();
+        })
+        .catch(err => {
+          console.error("Firebase save error:", err);
+          alert(currentLang === 'ar' 
+            ? 'فشل الحفظ في قاعدة بيانات Firebase. تم الحفظ محلياً فقط.' 
+            : 'Failed to save to Firebase database. Saved locally only.');
+        });
+    } else {
+      // Attempt to save to save.php dynamically (cPanel/PHP fallback)
+      const payload = {
+        username: currentLoggedInUser,
+        password: currentLoggedInPass,
+        state: appState
+      };
+
+      fetch('save.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success) {
+          // Update memory credentials if changed
+          if (appState.auth) {
+            currentLoggedInUser = appState.auth.username || 'admin';
+            currentLoggedInPass = appState.auth.password || '1234';
+          }
+          alert(currentLang === 'ar' 
+            ? 'تم حفظ التعديلات بنجاح!' 
+            : 'Changes saved successfully!');
+          toggleAdminOverlay();
+        } else {
+          console.warn("Server save skipped or failed:", data ? data.message : "No response");
+          alert(currentLang === 'ar' 
+            ? 'تم الحفظ محلياً على هذا المتصفح.\n(تنبيه: بما أنك تستضيف على GitHub Pages، يرجى تنزيل ملف default-data.js المحدث من أسفل التبويب العام واستبداله في مجلد المشروع وتحديث مستودع GitHub لتطبيق التعديلات للجميع).'
+            : 'Settings saved locally on this browser.\n(Notice: Since you are hosting on GitHub Pages, please download the updated default-data.js file at the bottom of the General tab, replace it in your project folder, and push to GitHub to apply changes globally.)');
+        }
       })
       .catch(err => {
-        console.error("Firebase save error:", err);
-        alert(currentLang === 'ar' 
-          ? 'فشل الحفظ في قاعدة بيانات Firebase. تم الحفظ محلياً فقط.' 
-          : 'Failed to save to Firebase database. Saved locally only.');
-      });
-  } else {
-    // Attempt to save to save.php dynamically (cPanel/PHP fallback)
-    const payload = {
-      username: currentLoggedInUser,
-      password: currentLoggedInPass,
-      state: appState
-    };
-
-    fetch('save.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data && data.success) {
-        // Update memory credentials if changed
-        if (appState.auth) {
-          currentLoggedInUser = appState.auth.username || 'admin';
-          currentLoggedInPass = appState.auth.password || '1234';
-        }
-        alert(currentLang === 'ar' 
-          ? 'تم حفظ التعديلات بنجاح!' 
-          : 'Changes saved successfully!');
-        toggleAdminOverlay();
-      } else {
-        console.warn("Server save skipped or failed:", data ? data.message : "No response");
+        console.error("Error writing to server:", err);
         alert(currentLang === 'ar' 
           ? 'تم الحفظ محلياً على هذا المتصفح.\n(تنبيه: بما أنك تستضيف على GitHub Pages، يرجى تنزيل ملف default-data.js المحدث من أسفل التبويب العام واستبداله في مجلد المشروع وتحديث مستودع GitHub لتطبيق التعديلات للجميع).'
           : 'Settings saved locally on this browser.\n(Notice: Since you are hosting on GitHub Pages, please download the updated default-data.js file at the bottom of the General tab, replace it in your project folder, and push to GitHub to apply changes globally.)');
-      }
-    })
-    .catch(err => {
-      console.error("Error writing to server:", err);
-      alert(currentLang === 'ar' 
-        ? 'تم الحفظ محلياً على هذا المتصفح.\n(تنبيه: بما أنك تستضيف على GitHub Pages، يرجى تنزيل ملف default-data.js المحدث من أسفل التبويب العام واستبداله في مجلد المشروع وتحديث مستودع GitHub لتطبيق التعديلات للجميع).'
-        : 'Settings saved locally on this browser.\n(Notice: Since you are hosting on GitHub Pages, please download the updated default-data.js file at the bottom of the General tab, replace it in your project folder, and push to GitHub to apply changes globally.)');
-    });
+      });
+    }
+  } catch (err) {
+    console.error("Save error caught:", err);
+    alert(currentLang === 'ar' 
+      ? 'حدث خطأ غير متوقع أثناء الحفظ: ' + err.message 
+      : 'An unexpected error occurred during save: ' + err.message);
   }
 }
 
