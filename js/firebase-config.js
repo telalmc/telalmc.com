@@ -1,25 +1,12 @@
-// Firebase configuration configuration file
-// To save settings automatically for all visitors on GitHub Pages:
-// 1. Create a free project on Firebase (https://console.firebase.google.com/)
-// 2. Add a Web App to your project to get the configuration object.
-// 3. Enable "Realtime Database" in Firebase Console.
-// 4. Set the Database Rules to read/write:
-//    {
-//      "rules": {
-//        ".read": "true",
-//        ".write": "true"
-//      }
-//    }
-// 5. Copy the config object and paste it below:
-
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyAc3kYu6XGP-CzurpwVdRxuY9G_YHygP_E",
+  authDomain: "telalmc-db.firebaseapp.com",
+  projectId: "telalmc-db",
+  storageBucket: "telalmc-db.firebasestorage.app",
+  messagingSenderId: "11072599562",
+  appId: "1:11072599562:web:5cbc24b30453746e2651f3",
+  databaseURL: "https://telalmc-db-default-rtdb.firebaseio.com" // Default database URL
 };
 
 // Export to window
