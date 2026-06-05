@@ -371,10 +371,20 @@ function renderSite() {
     const repeatCount = 6;
     for (let r = 0; r < repeatCount; r++) {
       appState.partners.forEach(partner => {
+        const logo = (partner.logoText || '').replace(/'/g, '');
+        let sub = '';
+        if (lang === 'ar') {
+          sub = partner.subTextAr || '';
+          if (!sub && partner.name) {
+            sub = partner.name === 'Herfy' ? 'شريك التشطيبات' : partner.name === 'Dokka Bakery' ? 'تجهيز تجاري' : 'شريك فرانشايز';
+          }
+        } else {
+          sub = partner.subTextEn || partner.subText || '';
+        }
         partnersHtml += `
           <div class="partner-card">
-            <span class="partner-logo-text">${partner.logoText.replace(/'/g, '')}</span>
-            <span class="partner-sub-text">${lang === 'ar' ? (partner.name === 'Herfy' ? 'شريك التشطيبات' : partner.name === 'Dokka Bakery' ? 'تجهيز تجاري' : 'شريك فرانشايز') : partner.subText}</span>
+            <span class="partner-logo-text">${logo}</span>
+            <span class="partner-sub-text">${sub}</span>
           </div>
         `;
       });
@@ -1144,6 +1154,20 @@ function showAdminDashboard() {
             </div>
           </div>
           
+          <!-- Partners List Section -->
+          <div class="form-group" style="margin-top:25px; border-top:1px solid var(--glass-border); padding-top:20px;">
+            <h4 style="color:var(--primary); font-weight:800; margin-bottom:8px; font-size:0.95rem;">
+              <i class="fas fa-handshake"></i> شركاء النجاح (الشعار المتحرك)
+            </h4>
+            <p class="admin-control-desc" style="margin-bottom: 12px;">يمكنك تعديل أسماء شركاء النجاح والوصف الفرعي الخاص بهم، أو إضافة وحذف شركاء من الشريط المتحرك.</p>
+            <div id="adm-partners-list" class="admin-sublist">
+              <!-- Rendered dynamically by renderAdminPartnersSublist() -->
+            </div>
+            <div style="margin-top: 12px; margin-bottom: 12px;">
+              <button type="button" class="btn btn-secondary" style="padding: 6px 15px; font-size:0.75rem; border-radius:10px;" onclick="addAdminPartnerItem()"><i class="fas fa-plus"></i> إضافة شريك نجاح جديد</button>
+            </div>
+          </div>
+          
           <!-- Export Config Files Card -->
           <div class="form-group" style="margin-top: 25px; padding: 20px; background: rgba(var(--primary-hue), var(--primary-sat), 10%, 0.15); border: 1px solid var(--primary-glow); border-radius: 12px; text-align: center;">
             <h4 style="color: var(--primary); font-weight: 800; margin-bottom: 8px; font-size: 0.95rem;"><i class="fas fa-file-export"></i> حفظ وتصدير تعديلات الموقع نهائياً للجميع</h4>
@@ -1401,6 +1425,7 @@ function showAdminDashboard() {
   renderAdminStatsSublist();
   renderAdminServicesSublist();
   renderAdminPortfolioSublist();
+  renderAdminPartnersSublist();
   } catch (err) {
     console.error("Error rendering admin dashboard:", err);
     alert(currentLang === 'ar' 
@@ -1638,57 +1663,94 @@ function renderAdminPortfolioSublist() {
   let listHtml = '';
   const portfolio = appState.portfolio || [];
   portfolio.forEach((port, idx) => {
-    const imagesStr = (port.imagesList && port.imagesList.length > 0) 
-      ? port.imagesList.join(', ') 
-      : port.image;
+    let galleryGridHtml = '';
+    const imagesList = port.imagesList || [];
+    
+    if (imagesList.length === 0) {
+      galleryGridHtml = `<p style="color: var(--text-3); font-size: 0.75rem; grid-column: 1/-1; text-align: center; margin: 10px 0;">لا توجد صور في المعرض حالياً. قم برفع صور أدناه.</p>`;
+    } else {
+      imagesList.forEach((imgUrl, imgIdx) => {
+        const isVideo = imgUrl.includes('data:video') || imgUrl.endsWith('.mp4');
+        galleryGridHtml += `
+          <div class="adm-gallery-item">
+            ${isVideo 
+              ? `<video src="${imgUrl}"></video><span class="video-badge"><i class="fas fa-play"></i> فيديو</span>`
+              : `<img src="${imgUrl}" alt="صورة ${imgIdx + 1}">`
+            }
+            <button type="button" class="btn-remove-thumb" onclick="removeVisualProjectImage('${port.id}', ${imgIdx})" title="حذف الصورة"><i class="fas fa-times"></i></button>
+          </div>
+        `;
+      });
+    }
 
     listHtml += `
       <div class="admin-list-item" data-id="${port.id}">
         <div class="admin-list-item-header">
-          <span class="admin-item-drag-title">المشروع ${idx + 1}</span>
+          <span class="admin-item-drag-title">المشروع ${idx + 1}: ${port.titleAr || 'مشروع جديد'}</span>
           <button class="btn-remove-item" onclick="removeAdminPortfolioItem('${port.id}')"><i class="fas fa-trash"></i> حذف المشروع</button>
         </div>
+        
         <div class="admin-row">
           <div class="form-group">
             <label class="form-label">اسم المشروع (عربي)</label>
-            <input type="text" class="form-input adm-port-title-ar" value="${port.titleAr}">
+            <input type="text" class="form-input adm-port-title-ar" value="${port.titleAr || ''}">
           </div>
           <div class="form-group">
             <label class="form-label">اسم المشروع (En)</label>
-            <input type="text" class="form-input adm-port-title-en" value="${port.titleEn}">
+            <input type="text" class="form-input adm-port-title-en" value="${port.titleEn || ''}">
           </div>
         </div>
+        
         <div class="admin-row">
           <div class="form-group">
             <label class="form-label">تصنيف المشروع (عربي)</label>
-            <input type="text" class="form-input adm-port-cat-ar" value="${port.categoryAr}">
+            <input type="text" class="form-input adm-port-cat-ar" value="${port.categoryAr || ''}">
           </div>
           <div class="form-group">
             <label class="form-label">تصنيف المشروع (En)</label>
-            <input type="text" class="form-input adm-port-cat-en" value="${port.categoryEn}">
+            <input type="text" class="form-input adm-port-cat-en" value="${port.categoryEn || ''}">
           </div>
         </div>
+        
         <div class="admin-row">
           <div class="form-group">
             <label class="form-label">شرح تفصيلي للمشروع (عربي)</label>
-            <textarea class="form-input adm-port-desc-ar">${port.descAr || ''}</textarea>
+            <textarea class="form-input adm-port-desc-ar" style="height: 70px;">${port.descAr || ''}</textarea>
           </div>
           <div class="form-group">
             <label class="form-label">شرح تفصيلي للمشروع (En)</label>
-            <textarea class="form-input adm-port-desc-en">${port.descEn || ''}</textarea>
+            <textarea class="form-input adm-port-desc-en" style="height: 70px;">${port.descEn || ''}</textarea>
           </div>
         </div>
+        
         <div class="form-group">
-          <label class="form-label">الصورة الأساسية للمصغرة (URL)</label>
-          <input type="text" class="form-input adm-port-img" value="${port.image}">
+          <label class="form-label">الصورة الأساسية للمشروع (الغلاف)</label>
+          <div class="adm-cover-preview">
+            ${(port.image && (port.image.includes('data:video') || port.image.endsWith('.mp4')))
+              ? `<video src="${port.image}"></video>`
+              : `<img src="${port.image || 'logo.png'}" alt="الغلاف">`
+            }
+            <div class="adm-cover-actions">
+              <input type="text" class="form-input adm-port-img" style="font-size:0.7rem; height:28px;" value="${port.image || ''}" placeholder="رابط الصورة أو كود base64">
+              <label class="btn-upload-label">
+                <i class="fas fa-image"></i> تحميل غلاف جديد
+                <input type="file" accept="image/*,video/*" style="display:none;" onchange="uploadProjectCoverImage(event, '${port.id}')">
+              </label>
+            </div>
+          </div>
         </div>
+        
         <div class="form-group">
-          <label class="form-label">معرض صور المشروع (URLs مفصولة بفواصل، يوصى بـ 5 صور)</label>
-          <textarea class="form-input adm-port-img-list">${imagesStr}</textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">تحميل صور جديدة للمشروع (استبدال الصور الحالية)</label>
-          <input type="file" class="form-input" accept="image/*" multiple onchange="handleMultipleImagesUpload(event, '${port.id}')">
+          <label class="form-label">معرض وسائط المشروع (الصور والفيديوهات المرفقة)</label>
+          <div class="adm-gallery-grid">
+            ${galleryGridHtml}
+          </div>
+          <div style="margin-top: 10px;">
+            <label class="btn-upload-label" style="border-color: var(--primary-glow); background: rgba(var(--primary-hue), var(--primary-sat), 10%, 0.2);">
+              <i class="fas fa-plus"></i> إضافة صور أو فيديوهات للمعرض
+              <input type="file" accept="image/*,video/*" multiple style="display:none;" onchange="appendProjectGalleryImages(event, '${port.id}')">
+            </label>
+          </div>
         </div>
       </div>
     `;
@@ -1696,8 +1758,8 @@ function renderAdminPortfolioSublist() {
   listContainer.innerHTML = listHtml;
 }
 
-// Add/Remove sublist items functions
 function addAdminServiceItem() {
+  syncStateFromDom();
   const newId = 'srv-' + (appState.services.length + 1) + '-' + Math.floor(Math.random() * 1000);
   appState.services.push({
     id: newId,
@@ -1711,11 +1773,73 @@ function addAdminServiceItem() {
 }
 
 function removeAdminServiceItem(id) {
+  syncStateFromDom();
   appState.services = appState.services.filter(s => s.id !== id);
   renderAdminServicesSublist();
 }
 
+function removeVisualProjectImage(portId, imgIdx) {
+  syncStateFromDom();
+  const project = appState.portfolio.find(p => p.id === portId);
+  if (project && project.imagesList) {
+    project.imagesList.splice(imgIdx, 1);
+    if (project.imagesList.length > 0 && !project.imagesList.includes(project.image)) {
+      project.image = project.imagesList[0];
+    }
+    renderAdminPortfolioSublist();
+  }
+}
+
+function uploadProjectCoverImage(event, portId) {
+  syncStateFromDom();
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const project = appState.portfolio.find(p => p.id === portId);
+    if (project) {
+      project.image = e.target.result;
+      const input = document.querySelector(`.admin-list-item[data-id="${portId}"] .adm-port-img`);
+      if (input) input.value = e.target.result;
+      renderAdminPortfolioSublist();
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function appendProjectGalleryImages(event, portId) {
+  syncStateFromDom();
+  const files = Array.from(event.target.files);
+  if (files.length === 0) return;
+  
+  let processed = 0;
+  const loadedUrls = [];
+  
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      loadedUrls.push(e.target.result);
+      processed++;
+      
+      if (processed === files.length) {
+        const project = appState.portfolio.find(p => p.id === portId);
+        if (project) {
+          if (!project.imagesList) project.imagesList = [];
+          project.imagesList.push(...loadedUrls);
+          if (!project.image && project.imagesList.length > 0) {
+            project.image = project.imagesList[0];
+          }
+          renderAdminPortfolioSublist();
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function addAdminPortfolioItem() {
+  syncStateFromDom();
   const newId = 'port-' + (appState.portfolio.length + 1) + '-' + Math.floor(Math.random() * 1000);
   appState.portfolio.push({
     id: newId,
@@ -1732,11 +1856,80 @@ function addAdminPortfolioItem() {
 }
 
 function removeAdminPortfolioItem(id) {
+  syncStateFromDom();
   appState.portfolio = appState.portfolio.filter(p => p.id !== id);
   renderAdminPortfolioSublist();
 }
 
-// Handle Image uploading via local file reader (Base64 conversion)
+function renderAdminPartnersSublist() {
+  const listContainer = document.getElementById('adm-partners-list');
+  if (!listContainer) return;
+  
+  let listHtml = '';
+  const partners = appState.partners || [];
+  partners.forEach((partner, idx) => {
+    if (!partner.id) {
+      partner.id = 'partner-' + idx + '-' + Math.floor(Math.random() * 1000);
+    }
+    
+    let subAr = partner.subTextAr || '';
+    if (!subAr && partner.name) {
+      subAr = partner.name === 'Herfy' ? 'شريك التشطيبات' : partner.name === 'Dokka Bakery' ? 'تجهيز تجاري' : 'شريك فرانشايز';
+    }
+    const subEn = partner.subTextEn || partner.subText || '';
+    
+    listHtml += `
+      <div class="admin-list-item" data-id="${partner.id}">
+        <div class="admin-list-item-header">
+          <span class="admin-item-drag-title">الشريك ${idx + 1}: ${partner.name || 'شريك جديد'}</span>
+          <button class="btn-remove-item" onclick="removeAdminPartnerItem('${partner.id}')"><i class="fas fa-trash"></i> حذف الشريك</button>
+        </div>
+        <div class="admin-row">
+          <div class="form-group">
+            <label class="form-label">الاسم الداخلي (للتنظيم)</label>
+            <input type="text" class="form-input adm-partner-name" value="${partner.name || ''}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">النص الكبير للشعار (مثال: HERFY)</label>
+            <input type="text" class="form-input adm-partner-logo-text" value="${partner.logoText || ''}">
+          </div>
+        </div>
+        <div class="admin-row">
+          <div class="form-group">
+            <label class="form-label">الوصف الفرعي (عربي)</label>
+            <input type="text" class="form-input adm-partner-sub-ar" value="${subAr}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">الوصف الفرعي (En)</label>
+            <input type="text" class="form-input adm-partner-sub-en" value="${subEn}">
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  listContainer.innerHTML = listHtml;
+}
+
+function addAdminPartnerItem() {
+  syncStateFromDom();
+  const newId = 'partner-' + (appState.partners.length + 1) + '-' + Math.floor(Math.random() * 1000);
+  appState.partners.push({
+    id: newId,
+    name: "شريك جديد",
+    logoText: "NEW",
+    subTextAr: "شريك جديد",
+    subTextEn: "New Partner",
+    subText: "New Partner"
+  });
+  renderAdminPartnersSublist();
+}
+
+function removeAdminPartnerItem(id) {
+  syncStateFromDom();
+  appState.partners = appState.partners.filter(p => p.id !== id);
+  renderAdminPartnersSublist();
+}
+
 function handleImageUpload(event, type, portId = null) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1751,146 +1944,184 @@ function handleImageUpload(event, type, portId = null) {
   reader.readAsDataURL(file);
 }
 
-// Multiple image upload handler for project gallery
-function handleMultipleImagesUpload(event, portId) {
-  const files = Array.from(event.target.files);
-  if (files.length === 0) return;
-  
-  const loadedUrls = [];
-  let processed = 0;
-  
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      loadedUrls.push(e.target.result);
-      processed++;
-      
-      if (processed === files.length) {
-        // Find matching project in local appState and update image lists
-        const project = appState.portfolio.find(p => p.id === portId);
-        if (project) {
-          project.image = loadedUrls[0];
-          project.imagesList = loadedUrls;
-          alert(currentLang === 'ar' ? 'تم قراءة الصور المرفوعة بنجاح! يرجى النقر على زر حفظ التعديلات لحفظها نهائياً.' : 'Images loaded successfully! Click Save changes to apply.');
-          renderAdminPortfolioSublist();
-        }
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-// Save dashboard values back to appState and save to localStorage
-function saveAdminChanges() {
-  // 1. General settings
-  appState.general.nameAr = document.getElementById('adm-name-ar').value;
-  appState.general.nameEn = document.getElementById('adm-name-en').value;
-  appState.general.logoTextAr = document.getElementById('adm-logo-ar').value;
-  appState.general.logoTextEn = document.getElementById('adm-logo-en').value;
-  appState.general.logoImage = document.getElementById('adm-logo-img-url').value;
+function syncStateFromDom() {
+  const nameAr = document.getElementById('adm-name-ar');
+  if (nameAr) appState.general.nameAr = nameAr.value;
+  const nameEn = document.getElementById('adm-name-en');
+  if (nameEn) appState.general.nameEn = nameEn.value;
+  const logoAr = document.getElementById('adm-logo-ar');
+  if (logoAr) appState.general.logoTextAr = logoAr.value;
+  const logoEn = document.getElementById('adm-logo-en');
+  if (logoEn) appState.general.logoTextEn = logoEn.value;
+  const logoImgUrl = document.getElementById('adm-logo-img-url');
+  if (logoImgUrl) appState.general.logoImage = logoImgUrl.value;
   
   if (!appState.auth) appState.auth = {};
-  appState.auth.username = document.getElementById('adm-auth-user').value;
-  appState.auth.password = document.getElementById('adm-auth-pass').value;
+  const authUser = document.getElementById('adm-auth-user');
+  if (authUser) appState.auth.username = authUser.value;
+  const authPass = document.getElementById('adm-auth-pass');
+  if (authPass) appState.auth.password = authPass.value;
   
-  // 1.5 Theme Settings
-  appState.theme.primaryHue = parseInt(document.getElementById('adm-color-hue').value, 10);
-  appState.theme.primarySaturation = parseInt(document.getElementById('adm-color-sat').value, 10);
-  appState.theme.primaryLightness = parseInt(document.getElementById('adm-color-light').value, 10);
+  const colorHue = document.getElementById('adm-color-hue');
+  if (colorHue) appState.theme.primaryHue = parseInt(colorHue.value, 10);
+  const colorSat = document.getElementById('adm-color-sat');
+  if (colorSat) appState.theme.primarySaturation = parseInt(colorSat.value, 10);
+  const colorLight = document.getElementById('adm-color-light');
+  if (colorLight) appState.theme.primaryLightness = parseInt(colorLight.value, 10);
   
-  // 2. SEO Settings
-  appState.seo.metaTitleAr = document.getElementById('adm-seo-title-ar').value;
-  appState.seo.metaTitleEn = document.getElementById('adm-seo-title-en').value;
-  appState.seo.metaDescAr = document.getElementById('adm-seo-desc-ar').value;
-  appState.seo.metaDescEn = document.getElementById('adm-seo-desc-en').value;
-  appState.seo.metaKeywords = document.getElementById('adm-seo-keys').value;
-  appState.seo.canonicalUrl = document.getElementById('adm-seo-canonical').value;
-  appState.seo.ogImage = document.getElementById('adm-seo-og').value;
+  const seoTitleAr = document.getElementById('adm-seo-title-ar');
+  if (seoTitleAr) appState.seo.metaTitleAr = seoTitleAr.value;
+  const seoTitleEn = document.getElementById('adm-seo-title-en');
+  if (seoTitleEn) appState.seo.metaTitleEn = seoTitleEn.value;
+  const seoDescAr = document.getElementById('adm-seo-desc-ar');
+  if (seoDescAr) appState.seo.metaDescAr = seoDescAr.value;
+  const seoDescEn = document.getElementById('adm-seo-desc-en');
+  if (seoDescEn) appState.seo.metaDescEn = seoDescEn.value;
+  const seoKeys = document.getElementById('adm-seo-keys');
+  if (seoKeys) appState.seo.metaKeywords = seoKeys.value;
+  const seoCanonical = document.getElementById('adm-seo-canonical');
+  if (seoCanonical) appState.seo.canonicalUrl = seoCanonical.value;
+  const seoOg = document.getElementById('adm-seo-og');
+  if (seoOg) appState.seo.ogImage = seoOg.value;
 
-  // 3. Hero Settings
-  appState.hero.badgeAr = document.getElementById('adm-hero-badge-ar').value;
-  appState.hero.badgeEn = document.getElementById('adm-hero-badge-en').value;
-  appState.hero.titleAr = document.getElementById('adm-hero-title-ar').value;
-  appState.hero.titleEn = document.getElementById('adm-hero-title-en').value;
-  appState.hero.subtitleAr = document.getElementById('adm-hero-sub-ar').value;
-  appState.hero.subtitleEn = document.getElementById('adm-hero-sub-en').value;
+  const heroBadgeAr = document.getElementById('adm-hero-badge-ar');
+  if (heroBadgeAr) appState.hero.badgeAr = heroBadgeAr.value;
+  const heroBadgeEn = document.getElementById('adm-hero-badge-en');
+  if (heroBadgeEn) appState.hero.badgeEn = heroBadgeEn.value;
+  const heroTitleAr = document.getElementById('adm-hero-title-ar');
+  if (heroTitleAr) appState.hero.titleAr = heroTitleAr.value;
+  const heroTitleEn = document.getElementById('adm-hero-title-en');
+  if (heroTitleEn) appState.hero.titleEn = heroTitleEn.value;
+  const heroSubAr = document.getElementById('adm-hero-sub-ar');
+  if (heroSubAr) appState.hero.subtitleAr = heroSubAr.value;
+  const heroSubEn = document.getElementById('adm-hero-sub-en');
+  if (heroSubEn) appState.hero.subtitleEn = heroSubEn.value;
 
-  appState.hero.card1TitleAr = document.getElementById('adm-hero-c1-t-ar').value;
-  appState.hero.card1TitleEn = document.getElementById('adm-hero-c1-t-en').value;
-  appState.hero.card1SubAr = document.getElementById('adm-hero-c1-s-ar').value;
-  appState.hero.card1SubEn = document.getElementById('adm-hero-c1-s-en').value;
-  appState.hero.card1Icon = document.getElementById('adm-hero-c1-icon').value;
+  const heroC1Ar = document.getElementById('adm-hero-c1-t-ar');
+  if (heroC1Ar) appState.hero.card1TitleAr = heroC1Ar.value;
+  const heroC1En = document.getElementById('adm-hero-c1-t-en');
+  if (heroC1En) appState.hero.card1TitleEn = heroC1En.value;
+  const heroC1sAr = document.getElementById('adm-hero-c1-s-ar');
+  if (heroC1sAr) appState.hero.card1SubAr = heroC1sAr.value;
+  const heroC1sEn = document.getElementById('adm-hero-c1-s-en');
+  if (heroC1sEn) appState.hero.card1SubEn = heroC1sEn.value;
+  const heroC1Icon = document.getElementById('adm-hero-c1-icon');
+  if (heroC1Icon) appState.hero.card1Icon = heroC1Icon.value;
 
-  appState.hero.card2TitleAr = document.getElementById('adm-hero-c2-t-ar').value;
-  appState.hero.card2TitleEn = document.getElementById('adm-hero-c2-t-en').value;
-  appState.hero.card2SubAr = document.getElementById('adm-hero-c2-s-ar').value;
-  appState.hero.card2SubEn = document.getElementById('adm-hero-c2-s-en').value;
-  appState.hero.card2Icon = document.getElementById('adm-hero-c2-icon').value;
+  const heroC2Ar = document.getElementById('adm-hero-c2-t-ar');
+  if (heroC2Ar) appState.hero.card2TitleAr = heroC2Ar.value;
+  const heroC2En = document.getElementById('adm-hero-c2-t-en');
+  if (heroC2En) appState.hero.card2TitleEn = heroC2En.value;
+  const heroC2sAr = document.getElementById('adm-hero-c2-s-ar');
+  if (heroC2sAr) appState.hero.card2SubAr = heroC2sAr.value;
+  const heroC2sEn = document.getElementById('adm-hero-c2-s-en');
+  if (heroC2sEn) appState.hero.card2SubEn = heroC2sEn.value;
+  const heroC2Icon = document.getElementById('adm-hero-c2-icon');
+  if (heroC2Icon) appState.hero.card2Icon = heroC2Icon.value;
 
-  // 4. About Settings
-  appState.about.titleAr = document.getElementById('adm-about-title-ar').value;
-  appState.about.titleEn = document.getElementById('adm-about-title-en').value;
-  appState.about.subtitleAr = document.getElementById('adm-about-sub-ar').value;
-  appState.about.subtitleEn = document.getElementById('adm-about-sub-en').value;
-  appState.about.contentAr = document.getElementById('adm-about-desc-ar').value;
-  appState.about.contentEn = document.getElementById('adm-about-desc-en').value;
+  const aboutTitleAr = document.getElementById('adm-about-title-ar');
+  if (aboutTitleAr) appState.about.titleAr = aboutTitleAr.value;
+  const aboutTitleEn = document.getElementById('adm-about-title-en');
+  if (aboutTitleEn) appState.about.titleEn = aboutTitleEn.value;
+  const aboutSubAr = document.getElementById('adm-about-sub-ar');
+  if (aboutSubAr) appState.about.subtitleAr = aboutSubAr.value;
+  const aboutSubEn = document.getElementById('adm-about-sub-en');
+  if (aboutSubEn) appState.about.subtitleEn = aboutSubEn.value;
+  const aboutDescAr = document.getElementById('adm-about-desc-ar');
+  if (aboutDescAr) appState.about.contentAr = aboutDescAr.value;
+  const aboutDescEn = document.getElementById('adm-about-desc-en');
+  if (aboutDescEn) appState.about.contentEn = aboutDescEn.value;
 
-  // Vision & Mission Settings
-  appState.visionMission.visionAr = document.getElementById('adm-vision-ar').value;
-  appState.visionMission.visionEn = document.getElementById('adm-vision-en').value;
-  appState.visionMission.missionAr = document.getElementById('adm-mission-ar').value;
-  appState.visionMission.missionEn = document.getElementById('adm-mission-en').value;
+  const visionAr = document.getElementById('adm-vision-ar');
+  if (visionAr) appState.visionMission.visionAr = visionAr.value;
+  const visionEn = document.getElementById('adm-vision-en');
+  if (visionEn) appState.visionMission.visionEn = visionEn.value;
+  const missionAr = document.getElementById('adm-mission-ar');
+  if (missionAr) appState.visionMission.missionAr = missionAr.value;
+  const missionEn = document.getElementById('adm-mission-en');
+  if (missionEn) appState.visionMission.missionEn = missionEn.value;
 
-  // Sync statistics sublist inputs
   const statLabelsAr = document.querySelectorAll('.adm-stat-l-ar');
   const statLabelsEn = document.querySelectorAll('.adm-stat-l-en');
   const statVals = document.querySelectorAll('.adm-stat-val');
-  
-  appState.about.stats = [];
-  statLabelsAr.forEach((labelAr, idx) => {
-    appState.about.stats.push({
-      labelAr: labelAr.value,
-      labelEn: statLabelsEn[idx].value,
-      value: statVals[idx].value
+  if (statLabelsAr.length > 0) {
+    appState.about.stats = [];
+    statLabelsAr.forEach((labelAr, idx) => {
+      appState.about.stats.push({
+        labelAr: labelAr.value,
+        labelEn: statLabelsEn[idx].value,
+        value: statVals[idx].value
+      });
     });
-  });
+  }
 
-  // 5. Services Settings
   const srvCards = document.querySelectorAll('#adm-services-list .admin-list-item');
-  appState.services = [];
-  srvCards.forEach(card => {
-    const id = card.getAttribute('data-id');
-    const nameAr = card.querySelector('.adm-srv-name-ar').value;
-    const nameEn = card.querySelector('.adm-srv-name-en').value;
-    const descAr = card.querySelector('.adm-srv-desc-ar').value;
-    const descEn = card.querySelector('.adm-srv-desc-en').value;
-    const icon = card.querySelector('.adm-srv-icon').value;
-    
-    appState.services.push({ id, nameAr, nameEn, descAr, descEn, icon });
-  });
-
-  // 6. Portfolio Settings
-  const portCards = document.querySelectorAll('#adm-portfolio-list .admin-list-item');
-  appState.portfolio = [];
-  portCards.forEach(card => {
-    const id = card.getAttribute('data-id');
-    const titleAr = card.querySelector('.adm-port-title-ar').value;
-    const titleEn = card.querySelector('.adm-port-title-en').value;
-    const categoryAr = card.querySelector('.adm-port-cat-ar').value;
-    const categoryEn = card.querySelector('.adm-port-cat-en').value;
-    const descAr = card.querySelector('.adm-port-desc-ar').value;
-    const descEn = card.querySelector('.adm-port-desc-en').value;
-    const image = card.querySelector('.adm-port-img').value;
-    
-    const imgListVal = card.querySelector('.adm-port-img-list').value;
-    const imagesList = imgListVal.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    
-    appState.portfolio.push({
-      id, titleAr, titleEn, categoryAr, categoryEn, descAr, descEn, image, imagesList
+  if (srvCards.length > 0) {
+    appState.services = [];
+    srvCards.forEach(card => {
+      const id = card.getAttribute('data-id');
+      const nameAr = card.querySelector('.adm-srv-name-ar').value;
+      const nameEn = card.querySelector('.adm-srv-name-en').value;
+      const descAr = card.querySelector('.adm-srv-desc-ar').value;
+      const descEn = card.querySelector('.adm-srv-desc-en').value;
+      const icon = card.querySelector('.adm-srv-icon').value;
+      appState.services.push({ id, nameAr, nameEn, descAr, descEn, icon });
     });
-  });
+  }
 
-  // 7. Contact Settings
+  const portCards = document.querySelectorAll('#adm-portfolio-list .admin-list-item');
+  if (portCards.length > 0) {
+    const updatedPortfolio = [];
+    portCards.forEach(card => {
+      const id = card.getAttribute('data-id');
+      const originalProject = appState.portfolio.find(p => p.id === id) || {};
+      
+      const titleAr = card.querySelector('.adm-port-title-ar').value;
+      const titleEn = card.querySelector('.adm-port-title-en').value;
+      const categoryAr = card.querySelector('.adm-port-cat-ar').value;
+      const categoryEn = card.querySelector('.adm-port-cat-en').value;
+      const descAr = card.querySelector('.adm-port-desc-ar').value;
+      const descEn = card.querySelector('.adm-port-desc-en').value;
+      const image = card.querySelector('.adm-port-img').value;
+      const imagesList = originalProject.imagesList || [image];
+      
+      updatedPortfolio.push({
+        id,
+        titleAr,
+        titleEn,
+        categoryAr,
+        categoryEn,
+        descAr,
+        descEn,
+        image,
+        imagesList
+      });
+    });
+    appState.portfolio = updatedPortfolio;
+  }
+
+  const partnerCards = document.querySelectorAll('#adm-partners-list .admin-list-item');
+  if (partnerCards.length > 0) {
+    const updatedPartners = [];
+    partnerCards.forEach(card => {
+      const id = card.getAttribute('data-id');
+      const name = card.querySelector('.adm-partner-name').value;
+      const logoText = card.querySelector('.adm-partner-logo-text').value;
+      const subTextAr = card.querySelector('.adm-partner-sub-ar').value;
+      const subTextEn = card.querySelector('.adm-partner-sub-en').value;
+      
+      updatedPartners.push({
+        id,
+        name,
+        logoText,
+        subTextAr,
+        subTextEn,
+        subText: subTextEn
+      });
+    });
+    appState.partners = updatedPartners;
+  }
+
   appState.contact.phone = document.getElementById('adm-contact-phone').value;
   appState.contact.whatsapp = document.getElementById('adm-contact-wa').value;
   appState.contact.email = document.getElementById('adm-contact-mail').value;
@@ -1909,8 +2140,8 @@ function saveAdminChanges() {
     firebaseDbRef.set(appState)
       .then(() => {
         alert(currentLang === 'ar' 
-          ? 'تم حفظ التعديلات وتطبيقها على كامل الموقع لجميع الزوار بنجاح (عبر قاعدة بيانات Firebase)!' 
-          : 'Settings saved and applied globally to all visitors successfully (via Firebase Database)!');
+          ? 'تم حفظ التعديلات بنجاح!' 
+          : 'Changes saved successfully!');
       })
       .catch(err => {
         console.error("Firebase save error:", err);
@@ -1942,8 +2173,8 @@ function saveAdminChanges() {
           currentLoggedInPass = appState.auth.password || '1234';
         }
         alert(currentLang === 'ar' 
-          ? 'تم حفظ التعديلات وتطبيقها على كامل الموقع لجميع الزوار بنجاح!' 
-          : 'Settings saved and applied globally to all visitors successfully!');
+          ? 'تم حفظ التعديلات بنجاح!' 
+          : 'Changes saved successfully!');
       } else {
         console.warn("Server save skipped or failed:", data ? data.message : "No response");
         alert(currentLang === 'ar' 
