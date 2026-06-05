@@ -2353,4 +2353,14 @@ window.addEventListener('DOMContentLoaded', () => {
   renderSite();
   startPreloader();
   syncWithFirebase();
+
+  // Close lightbox modal when clicking on background
+  const lbModal = document.getElementById('lightbox-modal');
+  if (lbModal) {
+    lbModal.addEventListener('click', (e) => {
+      if (e.target === lbModal) {
+        closeLightbox();
+      }
+    });
+  }
 });
