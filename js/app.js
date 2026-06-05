@@ -401,6 +401,9 @@ function renderSite() {
   if (aboutSubtitle) aboutSubtitle.textContent = lang === 'ar' ? appState.about.subtitleAr : appState.about.subtitleEn;
   if (aboutText) aboutText.textContent = lang === 'ar' ? appState.about.contentAr : appState.about.contentEn;
 
+  const aboutImgEl = document.querySelector('.about-main-image');
+  if (aboutImgEl) aboutImgEl.src = appState.about.image || 'projects/riyadh/1.jpeg';
+
   // About Stats
   const statsContainer = document.getElementById('about-stats-container');
   if (statsContainer) {
@@ -1333,6 +1336,20 @@ function showAdminDashboard() {
             <textarea id="adm-about-desc-en" class="form-input" style="height:140px;">${appState.about.contentEn}</textarea>
           </div>
           
+          <div class="form-group" style="margin-top: 15px;">
+            <label class="form-label">صورة قسم من نحن (الرئيسية على اليسار)</label>
+            <div class="adm-cover-preview">
+              <img id="adm-about-img-preview" src="${appState.about.image || 'projects/riyadh/1.jpeg'}" alt="من نحن">
+              <div class="adm-cover-actions">
+                <input type="text" id="adm-about-img" class="form-input" style="font-size:0.7rem; height:28px;" value="${appState.about.image || 'projects/riyadh/1.jpeg'}" placeholder="رابط الصورة أو كود base64">
+                <label class="btn-upload-label">
+                  <i class="fas fa-image"></i> تحميل صورة جديدة
+                  <input type="file" accept="image/*" style="display:none;" onchange="uploadAboutImage(event)">
+                </label>
+              </div>
+            </div>
+          </div>
+          
           <h4 style="margin-top:20px; border-bottom:1px solid var(--glass-border); padding-bottom:5px; color:var(--primary);">الرؤية والرسالة المؤسسية</h4>
           <div class="admin-row">
             <div class="form-group">
@@ -1979,6 +1996,22 @@ function removeAdminPartnerItem(id) {
   renderAdminPartnersSublist();
 }
 
+function uploadAboutImage(event) {
+  syncStateFromDom();
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    appState.about.image = e.target.result;
+    const input = document.getElementById('adm-about-img');
+    if (input) input.value = e.target.result;
+    const preview = document.getElementById('adm-about-img-preview');
+    if (preview) preview.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function handleImageUpload(event, type, portId = null) {
   const file = event.target.files[0];
   if (!file) return;
@@ -2080,6 +2113,9 @@ function syncStateFromDom() {
   if (aboutDescAr) appState.about.contentAr = aboutDescAr.value;
   const aboutDescEn = document.getElementById('adm-about-desc-en');
   if (aboutDescEn) appState.about.contentEn = aboutDescEn.value;
+
+  const aboutImg = document.getElementById('adm-about-img');
+  if (aboutImg) appState.about.image = aboutImg.value;
 
   const visionAr = document.getElementById('adm-vision-ar');
   if (visionAr) appState.visionMission.visionAr = visionAr.value;
