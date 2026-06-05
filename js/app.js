@@ -1070,6 +1070,7 @@ function showAdminDashboard() {
         <button class="admin-tab-btn" onclick="switchAdminTab(event, 'tab-services')"><i class="fas fa-list-check"></i> ${currentLang === 'ar' ? 'الخدمات' : 'Services'}</button>
         <button class="admin-tab-btn" onclick="switchAdminTab(event, 'tab-portfolio')"><i class="fas fa-images"></i> ${currentLang === 'ar' ? 'المشاريع' : 'Portfolio'}</button>
         <button class="admin-tab-btn" onclick="switchAdminTab(event, 'tab-contact')"><i class="fas fa-phone"></i> ${currentLang === 'ar' ? 'الاتصال والخارطة' : 'Contact & Map'}</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab(event, 'tab-roadmap')"><i class="fas fa-route"></i> ${currentLang === 'ar' ? 'منهجية العمل' : 'Methodology'}</button>
       </div>
       
       <div class="admin-content-pane">
@@ -1413,6 +1414,15 @@ function showAdminDashboard() {
             <textarea id="adm-contact-map" class="form-input" style="height:100px;">${appState.contact.mapIframe}</textarea>
           </div>
         </div>
+
+        <!-- ROADMAP TAB -->
+        <div id="tab-roadmap" class="admin-tab-content">
+          <h4 style="color:var(--primary); font-weight:800; margin-bottom:12px;">خطوات منهجية العمل (تسليم المفتاح)</h4>
+          <p class="admin-control-desc" style="margin-bottom:20px;">يمكنك تعديل الخطوات الأربعة لمنهجية العمل (مثل العناوين والشروحات التفصيلية) لتظهر مباشرة في الصفحة الرئيسية.</p>
+          <div id="adm-roadmap-list" style="display:flex; flex-direction:column; gap:20px;">
+            <!-- Rendered dynamically by renderAdminRoadmapSublist() -->
+          </div>
+        </div>
       </div>
     </div>
     <div class="admin-header" style="border-top:1px solid var(--glass-border); border-bottom:none; padding:20px 30px; justify-content: flex-end; gap: 15px;">
@@ -1426,6 +1436,7 @@ function showAdminDashboard() {
   renderAdminServicesSublist();
   renderAdminPortfolioSublist();
   renderAdminPartnersSublist();
+  renderAdminRoadmapSublist();
   } catch (err) {
     console.error("Error rendering admin dashboard:", err);
     alert(currentLang === 'ar' 
@@ -1861,6 +1872,44 @@ function removeAdminPortfolioItem(id) {
   renderAdminPortfolioSublist();
 }
 
+function renderAdminRoadmapSublist() {
+  const listContainer = document.getElementById('adm-roadmap-list');
+  if (!listContainer) return;
+  
+  let listHtml = '';
+  const roadmap = appState.roadmap || [];
+  roadmap.forEach((step, idx) => {
+    listHtml += `
+      <div class="admin-list-item" data-idx="${idx}">
+        <div class="admin-list-item-header">
+          <span class="admin-item-drag-title">الخطوة ${step.step}</span>
+        </div>
+        <div class="admin-row">
+          <div class="form-group">
+            <label class="form-label">العنوان (عربي)</label>
+            <input type="text" class="form-input adm-road-title-ar" value="${step.titleAr || ''}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">العنوان (En)</label>
+            <input type="text" class="form-input adm-road-title-en" value="${step.titleEn || ''}">
+          </div>
+        </div>
+        <div class="admin-row">
+          <div class="form-group">
+            <label class="form-label">الشرح التفصيلي (عربي)</label>
+            <textarea class="form-input adm-road-desc-ar" style="height: 70px;">${step.descAr || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">الشرح التفصيلي (En)</label>
+            <textarea class="form-input adm-road-desc-en" style="height: 70px;">${step.descEn || ''}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  listContainer.innerHTML = listHtml;
+}
+
 function renderAdminPartnersSublist() {
   const listContainer = document.getElementById('adm-partners-list');
   if (!listContainer) return;
@@ -2120,6 +2169,29 @@ function syncStateFromDom() {
       });
     });
     appState.partners = updatedPartners;
+  }
+
+  const roadCards = document.querySelectorAll('#adm-roadmap-list .admin-list-item');
+  if (roadCards.length > 0) {
+    const updatedRoadmap = [];
+    roadCards.forEach(card => {
+      const idx = parseInt(card.getAttribute('data-idx'), 10);
+      const originalStep = appState.roadmap[idx] || {};
+      
+      const titleAr = card.querySelector('.adm-road-title-ar').value;
+      const titleEn = card.querySelector('.adm-road-title-en').value;
+      const descAr = card.querySelector('.adm-road-desc-ar').value;
+      const descEn = card.querySelector('.adm-road-desc-en').value;
+      
+      updatedRoadmap.push({
+        step: originalStep.step || ('0' + (idx + 1)),
+        titleAr,
+        titleEn,
+        descAr,
+        descEn
+      });
+    });
+    appState.roadmap = updatedRoadmap;
   }
 
   appState.contact.phone = document.getElementById('adm-contact-phone').value;
