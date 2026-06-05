@@ -2133,3 +2133,123 @@ body.light-mode .vision-mission-card:hover .vision-mission-icon-box {
   }
 }
 
+/* ==========================================================================
+   Visual Media Gallery styles for Admin Dashboard
+   ========================================================================== */
+.adm-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px dashed var(--glass-border);
+}
+
+.adm-gallery-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adm-gallery-item img,
+.adm-gallery-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adm-gallery-item .btn-remove-thumb {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.95);
+  border: none;
+  color: #fff;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 3;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.adm-gallery-item .btn-remove-thumb:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.adm-gallery-item .video-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  font-size: 0.65rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 2px 5px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  z-index: 2;
+}
+
+.adm-cover-preview {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  margin-top: 5px;
+  margin-bottom: 12px;
+}
+
+.adm-cover-preview img,
+.adm-cover-preview video {
+  width: 90px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--primary-glow);
+}
+
+.adm-cover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-upload-label {
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  border-radius: 20px;
+  background: rgba(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.15);
+  border: 1px solid var(--primary-glow);
+  color: var(--primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-upload-label:hover {
+  background: var(--primary);
+  color: #000;
+}
+
