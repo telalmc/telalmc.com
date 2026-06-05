@@ -1210,11 +1210,13 @@ body.light-mode .portfolio-badge {
 }
 
 .lightbox-close {
-  top: -60px;
-  right: 10px;
+  position: fixed;
+  top: 25px;
+  right: 25px;
   width: 44px;
   height: 44px;
   font-size: 1.3rem;
+  z-index: 2100;
 }
 
 .lightbox-prev, .lightbox-next {
