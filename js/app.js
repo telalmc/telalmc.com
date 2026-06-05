@@ -672,6 +672,14 @@ function renderSite() {
     }
   }
 
+  const scrollTopBtn = document.getElementById('scroll-top-btn');
+  if (scrollTopBtn) {
+    const stTooltip = scrollTopBtn.querySelector('.scroll-top-tooltip');
+    if (stTooltip) {
+      stTooltip.textContent = lang === 'ar' ? 'العودة للأعلى' : 'Back to Top';
+    }
+  }
+
   setupScrollSpy();
   initCounterAnimations();
 
@@ -731,6 +739,13 @@ function toggleTheme() {
   renderSite();
 }
 
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+}
+
 function setupScrollSpy() {
   const sections = document.querySelectorAll('section');
   const navLinks = document.querySelectorAll('.nav-link');
@@ -744,6 +759,16 @@ function setupScrollSpy() {
       navbar.classList.add('scrolled');
     } else {
       navbar.classList.remove('scrolled');
+    }
+
+    // Toggle scroll-to-top button visibility
+    const scrollTopBtn = document.getElementById('scroll-top-btn');
+    if (scrollTopBtn) {
+      if (scrollPos > 300) {
+        scrollTopBtn.classList.add('show');
+      } else {
+        scrollTopBtn.classList.remove('show');
+      }
     }
 
     sections.forEach(section => {
