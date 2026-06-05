@@ -31,28 +31,66 @@
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
 
+  <!-- Base Configuration Data -->
+  <script src="js/default-data.js"></script>
+  <script src="js/firebase-config.js"></script>
+  
+  <!-- Firebase Compatibility SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
 
   <!-- Prevent Flash of Unstyled Theme Color (FOUC) -->
+  <style id="fouc-styles">
+    :root {
+      --primary-hue: 38; /* Default fallback */
+      --primary-sat: 75%;
+      --primary-light: 48%;
+      --primary: hsl(var(--primary-hue), var(--primary-sat), var(--primary-light));
+      --primary-glow: hsla(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.35);
+      --primary-glow-strong: hsla(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.6);
+    }
+  </style>
   <script>
     (function() {
       try {
+        // 1. Get default values from loaded default-data.js config
+        let hue = 38;
+        let sat = '75%';
+        let light = '48%';
+        
+        if (typeof defaultCompanyData !== 'undefined' && defaultCompanyData.theme) {
+          hue = defaultCompanyData.theme.primaryHue || hue;
+          sat = (defaultCompanyData.theme.primarySaturation !== undefined ? defaultCompanyData.theme.primarySaturation : 75) + '%';
+          light = (defaultCompanyData.theme.primaryLightness !== undefined ? defaultCompanyData.theme.primaryLightness : 48) + '%';
+        }
+        
+        // 2. Override with custom saved state if exists in localStorage
         const saved = localStorage.getItem('altilal_company_data');
         if (saved) {
           const state = JSON.parse(saved);
           if (state && state.theme) {
-            const root = document.documentElement;
-            if (state.theme.primaryHue) {
-              root.style.setProperty('--primary-hue', state.theme.primaryHue);
-            }
-            if (state.theme.primarySaturation) {
-              root.style.setProperty('--primary-sat', state.theme.primarySaturation + '%');
-            }
-            if (state.theme.primaryLightness) {
-              root.style.setProperty('--primary-light', state.theme.primaryLightness + '%');
-            }
+            hue = state.theme.primaryHue || hue;
+            sat = (state.theme.primarySaturation !== undefined ? state.theme.primarySaturation : parseInt(sat)) + '%';
+            light = (state.theme.primaryLightness !== undefined ? state.theme.primaryLightness : parseInt(light)) + '%';
           }
+        }
+        
+        // 3. Set the style block
+        const styleTag = document.getElementById('fouc-styles');
+        if (styleTag) {
+          styleTag.innerHTML = `
+            :root {
+              --primary-hue: ${hue};
+              --primary-sat: ${sat};
+              --primary-light: ${light};
+              --primary: hsl(var(--primary-hue), var(--primary-sat), var(--primary-light));
+              --primary-glow: hsla(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.35);
+              --primary-glow-strong: hsla(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.6);
+            }
+          `;
         }
       } catch (e) {}
     })();
@@ -340,7 +378,6 @@
   </a>
 
   <!-- Scripts -->
-  <script src="js/default-data.js"></script>
   <script src="js/cursor-trail.js"></script>
   <script src="js/app.js"></script>
 </body>
