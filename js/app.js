@@ -2128,6 +2128,10 @@ function syncStateFromDom() {
   appState.contact.addressAr = document.getElementById('adm-contact-add-ar').value;
   appState.contact.addressEn = document.getElementById('adm-contact-add-en').value;
   appState.contact.mapIframe = document.getElementById('adm-contact-map').value;
+}
+
+function saveAdminChanges() {
+  syncStateFromDom();
 
   // Persist State
   saveState();
@@ -2142,6 +2146,7 @@ function syncStateFromDom() {
         alert(currentLang === 'ar' 
           ? 'تم حفظ التعديلات بنجاح!' 
           : 'Changes saved successfully!');
+        toggleAdminOverlay();
       })
       .catch(err => {
         console.error("Firebase save error:", err);
@@ -2175,6 +2180,7 @@ function syncStateFromDom() {
         alert(currentLang === 'ar' 
           ? 'تم حفظ التعديلات بنجاح!' 
           : 'Changes saved successfully!');
+        toggleAdminOverlay();
       } else {
         console.warn("Server save skipped or failed:", data ? data.message : "No response");
         alert(currentLang === 'ar' 
@@ -2189,8 +2195,6 @@ function syncStateFromDom() {
         : 'Settings saved locally on this browser.\n(Notice: Since you are hosting on GitHub Pages, please download the updated default-data.js file at the bottom of the General tab, replace it in your project folder, and push to GitHub to apply changes globally.)');
     });
   }
-
-  toggleAdminOverlay();
 }
 
 
